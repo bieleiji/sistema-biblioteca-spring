@@ -2,22 +2,16 @@ package com.example.sistemabiliotecaspring.entities;
 
 import jakarta.persistence.*;
 
-@Entity(name = "livros")
-public class Livro {
+@Entity(name = "usuarios")
+public class Usuario {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id_livro")
+    @Column(name = "id_usuario")
     private Long id;
 
     private String nome;
-    private boolean eh_emprestado;
-
-    public Livro() {}
-
-    public Livro(String nome, boolean eh_emprestado) {
-        this.nome = nome;
-        this.eh_emprestado = eh_emprestado;
-    }
+    private String email;
+    private String senha;
 
     public Long getId() {
         return id;
@@ -35,11 +29,19 @@ public class Livro {
         this.nome = nome;
     }
 
-    public boolean isEh_emprestado() {
-        return eh_emprestado;
+    public String getEmail() {
+        return email;
     }
 
-    public void setEh_emprestado(boolean eh_emprestado) {
-        this.eh_emprestado = eh_emprestado;
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    public String getSenha() {
+        return senha;
+    }
+
+    public void setSenha(String senha) {
+        this.senha = senha;
     }
 }

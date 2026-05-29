@@ -1,6 +1,9 @@
 package com.example.sistemabiliotecaspring.request;
 
+import jakarta.validation.constraints.NotBlank;
+
 public class LivroRequest {
+    @NotBlank
     private String nome;
     private boolean eh_emprestado;
 
@@ -8,15 +11,7 @@ public class LivroRequest {
         return nome;
     }
 
-    public void setNome(String nome) {
-        this.nome = nome;
-    }
-
     public boolean isEh_emprestado() {
         return eh_emprestado;
-    }
-
-    public void setEh_emprestado(boolean eh_emprestado) {
-        this.eh_emprestado = eh_emprestado;
     }
 }
