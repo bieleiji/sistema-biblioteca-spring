@@ -13,13 +13,17 @@ import org.springframework.stereotype.Service;
 public class LivrosService {
     private final LivrosRepository livrosRepository;
 
-    public LivrosService(LivrosRepository livrosRepository) {
+    public LivrosService(LivrosRepository livrosRepository)  {
         this.livrosRepository = livrosRepository;
     }
 
-    public Page<Livro> getLivros(int page, int size) {
+    public Page<Livro> getLivros(int page, int size, String titulo) {
         Pageable pageable = PageRequest.of(page, size);
-        return livrosRepository.findAll(pageable);
+
+        if(titulo == null)
+            return livrosRepository.findAll(pageable);
+
+        return livrosRepository.findByNomeContainingIgnoreCase(titulo, pageable);
     }
 
     public Livro salvarLivro(LivroRequest livroRequest) {

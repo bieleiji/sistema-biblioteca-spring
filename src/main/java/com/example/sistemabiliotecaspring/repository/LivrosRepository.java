@@ -11,4 +11,5 @@ import org.springframework.stereotype.Repository;
 public interface LivrosRepository extends JpaRepository<Livro, Long> {
     Livro getLivroById(Long id);
     @NullMarked Page<Livro> findAll(Pageable pageable);
+    Page<Livro> findByNomeContainingIgnoreCase(String nome, Pageable pageable);
 }

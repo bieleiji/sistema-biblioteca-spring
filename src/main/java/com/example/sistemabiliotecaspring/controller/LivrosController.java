@@ -21,8 +21,9 @@ public class LivrosController {
     @GetMapping
     public Page<Livro> getLivros(
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size){
-        return livrosService.getLivros(page, size);
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(required = false) String titulo){
+        return livrosService.getLivros(page, size, titulo);
     }
 
     @PostMapping
