@@ -1,10 +1,14 @@
 package com.example.sistemabiliotecaspring.repository;
 
 import com.example.sistemabiliotecaspring.model.Livro;
+import org.jspecify.annotations.NullMarked;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 @Repository
 public interface LivrosRepository extends JpaRepository<Livro, Long> {
-    public Livro getLivroById(Long id);
+    Livro getLivroById(Long id);
+    @NullMarked Page<Livro> findAll(Pageable pageable);
 }

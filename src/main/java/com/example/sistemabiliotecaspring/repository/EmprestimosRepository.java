@@ -8,5 +8,5 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface EmprestimosRepository extends JpaRepository<Emprestimo, Long> {
-    public Emprestimo findEmprestimoByUsuarioAndLivro(Usuario usuario, Livro livro);
+    Emprestimo findEmprestimoByUsuarioAndLivroAndDevolvidoIsFalse(Usuario usuario, Livro livro);
 }

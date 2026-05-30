@@ -8,10 +8,10 @@ import com.example.sistemabiliotecaspring.repository.EmprestimosRepository;
 import com.example.sistemabiliotecaspring.repository.LivrosRepository;
 import com.example.sistemabiliotecaspring.repository.UsuariosRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
-import java.util.Optional;
 
 @Service
 public class EmprestimosService {
@@ -24,33 +24,56 @@ public class EmprestimosService {
     @Autowired
     private UsuariosRepository usuariosRepository;
 
-    public Emprestimo emprestarLivro(long id, EmprestimoRequest emprestimoRequest) {
+    public ResponseEntity<Object> emprestarLivro(long id, EmprestimoRequest emprestimoRequest) {
         Usuario usuario = usuariosRepository.findById(id);
         Livro livro = livrosRepository.getLivroById(emprestimoRequest.getId_livro());
 
-        if(usuario!=null && livro!=null) {
+        if (usuario == null || livro == null || livro.isEh_emprestado()) {
+            if(usuario == null)
+                return ResponseEntity.status(404).body("usuario não encontrado");
+
+            else if(livro == null)
+                return ResponseEntity.status(404).body("livro não encontrado");
+
+            else if(livro.isEh_emprestado())
+                return ResponseEntity.status(403).body("livro já foi emprestado");
+
+            else return null;
+        } else {
             Emprestimo emprestimo = new Emprestimo();
             emprestimo.setUsuario(usuario);
             emprestimo.setLivro(livro);
             livro.setEh_emprestado(true);
             emprestimo.setData_emprestimo(LocalDate.now());
             emprestimo.setDevolvido(false);
-            return emprestimosRepository.save(emprestimo);
+            return ResponseEntity.status(201).body(emprestimosRepository.save(emprestimo));
         }
-
-        return null;
     }
 
-    public Emprestimo devolverLivro(long id, EmprestimoRequest emprestimoRequest) {
+    public ResponseEntity<Object> devolverLivro(long id, EmprestimoRequest emprestimoRequest) {
         Usuario usuario = usuariosRepository.findById(id);
         Livro livro = livrosRepository.getLivroById(emprestimoRequest.getId_livro());
 
-        if(usuario!=null &&  livro!=null) {
-            Emprestimo emprestimo = emprestimosRepository.findEmprestimoByUsuarioAndLivro(usuario,livro);
-            if(emprestimo!=null) {
+        if (usuario == null || livro == null) {
+            if(usuario == null)
+                return ResponseEntity.status(404).body("usuario não encontrado");
+
+            else return ResponseEntity.status(404).body("livro não encontrado");
+        } else {
+            Emprestimo emprestimo = emprestimosRepository.findEmprestimoByUsuarioAndLivroAndDevolvidoIsFalse(usuario,livro);
+            if (emprestimo == null || emprestimo.isDevolvido()) {
+                if (emprestimo != null) {
+                    if(emprestimo.isDevolvido()) {
+                        return ResponseEntity.status(403).body("livro já foi deovolvido");
+                    }
+                } else {
+                    return ResponseEntity.status(404).body("emprestimo não encontrado");
+                }
+            } else {
                 emprestimo.setDate_devolucao(LocalDate.now());
                 emprestimo.setDevolvido(true);
-                return emprestimosRepository.save(emprestimo);
+                livro.setEh_emprestado(false);
+                return ResponseEntity.status(201).body(emprestimosRepository.save(emprestimo));
             }
         }
 

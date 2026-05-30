@@ -3,6 +3,7 @@ package com.example.sistemabiliotecaspring.controller;
 import com.example.sistemabiliotecaspring.model.Usuario;
 import com.example.sistemabiliotecaspring.dto.UsuarioRequest;
 import com.example.sistemabiliotecaspring.service.UsuariosService;
+import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -23,8 +24,9 @@ public class UsuariosController {
     }
 
     @GetMapping
-    public List<Usuario> listarUsuarios() {
-        return usuariosService.listarUsuarios();
+    public Page<Usuario> listarUsuarios(@RequestParam(defaultValue = "0") int page,
+                                        @RequestParam(defaultValue = "10") int size){
+        return usuariosService.listarUsuarios(page, size);
     }
 
     @PostMapping("/login")

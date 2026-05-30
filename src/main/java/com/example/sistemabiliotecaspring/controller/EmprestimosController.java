@@ -1,9 +1,8 @@
 package com.example.sistemabiliotecaspring.controller;
 
 import com.example.sistemabiliotecaspring.dto.EmprestimoRequest;
-import com.example.sistemabiliotecaspring.model.Emprestimo;
-import com.example.sistemabiliotecaspring.model.Livro;
 import com.example.sistemabiliotecaspring.service.EmprestimosService;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -15,12 +14,12 @@ public class EmprestimosController {
     }
 
     @PostMapping("/{id}/emprestar")
-    public Emprestimo emprestarLivro(@PathVariable long id, @RequestBody EmprestimoRequest emprestimoRequest) {
+    public ResponseEntity<Object> emprestarLivro(@PathVariable long id, @RequestBody EmprestimoRequest emprestimoRequest) {
         return emprestimosService.emprestarLivro(id, emprestimoRequest);
     }
 
     @PostMapping("/{id}/devolver")
-    public Emprestimo devolverLivro(@PathVariable long id, @RequestBody EmprestimoRequest emprestimoRequest) {
+    public ResponseEntity<Object> devolverLivro(@PathVariable long id, @RequestBody EmprestimoRequest emprestimoRequest) {
         return emprestimosService.devolverLivro(id, emprestimoRequest);
     }
 }

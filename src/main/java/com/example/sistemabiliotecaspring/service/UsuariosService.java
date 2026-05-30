@@ -3,6 +3,9 @@ package com.example.sistemabiliotecaspring.service;
 import com.example.sistemabiliotecaspring.model.Usuario;
 import com.example.sistemabiliotecaspring.repository.UsuariosRepository;
 import com.example.sistemabiliotecaspring.dto.UsuarioRequest;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -30,8 +33,9 @@ public class UsuariosService {
         return usuariosRepository.save(usuario);
     }
 
-    public List<Usuario> listarUsuarios() {
-        return usuariosRepository.findAll();
+    public Page<Usuario> listarUsuarios(int page, int size) {
+        Pageable pageable =  PageRequest.of(page, size);
+        return usuariosRepository.findAll(pageable);
     }
 
     public ResponseEntity<String> logar(UsuarioRequest usuarioRequest) {

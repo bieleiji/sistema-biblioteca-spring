@@ -3,6 +3,7 @@ package com.example.sistemabiliotecaspring.controller;
 import com.example.sistemabiliotecaspring.model.Livro;
 import com.example.sistemabiliotecaspring.dto.LivroRequest;
 import com.example.sistemabiliotecaspring.service.LivrosService;
+import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -18,8 +19,10 @@ public class LivrosController {
     }
 
     @GetMapping
-    public List<Livro> getLivros(){
-        return livrosService.getLivros();
+    public Page<Livro> getLivros(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size){
+        return livrosService.getLivros(page, size);
     }
 
     @PostMapping

@@ -3,10 +3,11 @@ package com.example.sistemabiliotecaspring.service;
 import com.example.sistemabiliotecaspring.model.Livro;
 import com.example.sistemabiliotecaspring.repository.LivrosRepository;
 import com.example.sistemabiliotecaspring.dto.LivroRequest;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-
-import java.util.List;
 
 @Service
 public class LivrosService {
@@ -16,8 +17,9 @@ public class LivrosService {
         this.livrosRepository = livrosRepository;
     }
 
-    public List<Livro> getLivros() {
-        return livrosRepository.findAll();
+    public Page<Livro> getLivros(int page, int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        return livrosRepository.findAll(pageable);
     }
 
     public Livro salvarLivro(LivroRequest livroRequest) {
