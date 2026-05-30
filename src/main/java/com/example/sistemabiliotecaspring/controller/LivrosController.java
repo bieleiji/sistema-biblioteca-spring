@@ -1,7 +1,7 @@
 package com.example.sistemabiliotecaspring.controller;
 
-import com.example.sistemabiliotecaspring.entities.Livro;
-import com.example.sistemabiliotecaspring.request.LivroRequest;
+import com.example.sistemabiliotecaspring.model.Livro;
+import com.example.sistemabiliotecaspring.dto.LivroRequest;
 import com.example.sistemabiliotecaspring.service.LivrosService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;

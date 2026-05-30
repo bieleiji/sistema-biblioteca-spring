@@ -1,8 +1,8 @@
 package com.example.sistemabiliotecaspring.service;
 
-import com.example.sistemabiliotecaspring.entities.Livro;
+import com.example.sistemabiliotecaspring.model.Livro;
 import com.example.sistemabiliotecaspring.repository.LivrosRepository;
-import com.example.sistemabiliotecaspring.request.LivroRequest;
+import com.example.sistemabiliotecaspring.dto.LivroRequest;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 

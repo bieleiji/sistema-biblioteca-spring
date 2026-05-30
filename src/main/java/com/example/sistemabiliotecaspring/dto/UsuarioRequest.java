@@ -1,4 +1,4 @@
-package com.example.sistemabiliotecaspring.request;
+package com.example.sistemabiliotecaspring.dto;
 
 import jakarta.validation.constraints.NotBlank;
 

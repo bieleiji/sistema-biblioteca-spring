@@ -1,8 +1,8 @@
 package com.example.sistemabiliotecaspring.service;
 
-import com.example.sistemabiliotecaspring.entities.Usuario;
+import com.example.sistemabiliotecaspring.model.Usuario;
 import com.example.sistemabiliotecaspring.repository.UsuariosRepository;
-import com.example.sistemabiliotecaspring.request.UsuarioRequest;
+import com.example.sistemabiliotecaspring.dto.UsuarioRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;

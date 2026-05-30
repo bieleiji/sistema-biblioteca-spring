@@ -1,4 +1,4 @@
-package com.example.sistemabiliotecaspring.entities;
+package com.example.sistemabiliotecaspring.model;
 
 import jakarta.persistence.*;
 
