@@ -12,4 +12,5 @@ public interface LivrosRepository extends JpaRepository<Livro, Long> {
     Livro getLivroById(Long id);
     @NullMarked Page<Livro> findAll(Pageable pageable);
     Page<Livro> findByNomeContainingIgnoreCase(String nome, Pageable pageable);
+    Page<Livro> findByEmprestado(boolean emprestado, Pageable pageable);
 }

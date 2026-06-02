@@ -17,13 +17,16 @@ public class LivrosService {
         this.livrosRepository = livrosRepository;
     }
 
-    public Page<Livro> getLivros(int page, int size, String titulo) {
+    public Page<Livro> getLivros(int page, int size, String titulo, Boolean ehEmprestado) {
         Pageable pageable = PageRequest.of(page, size);
 
-        if(titulo == null)
-            return livrosRepository.findAll(pageable);
+        if(titulo != null)
+            return livrosRepository.findByNomeContainingIgnoreCase(titulo, pageable);
 
-        return livrosRepository.findByNomeContainingIgnoreCase(titulo, pageable);
+        if(ehEmprestado != null)
+            return livrosRepository.findByEmprestado(ehEmprestado, pageable);
+
+        return livrosRepository.findAll(pageable);
     }
 
     public Livro salvarLivro(LivroRequest livroRequest) {
@@ -43,8 +46,8 @@ public class LivrosService {
             if(!livroRequest.getNome().isBlank())
             livroAtualizado.setNome(livroRequest.getNome());
 
-        if(livroRequest.isEh_emprestado() != livroAtualizado.isEh_emprestado())
-            livroAtualizado.setEh_emprestado(livroRequest.isEh_emprestado());
+        if(livroRequest.isEh_emprestado() != livroAtualizado.isEmprestado())
+            livroAtualizado.setEmprestado(livroRequest.isEh_emprestado());
 
         return livrosRepository.save(livroAtualizado);
     }

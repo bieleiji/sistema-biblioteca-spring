@@ -28,14 +28,14 @@ public class EmprestimosService {
         Usuario usuario = usuariosRepository.findById(id);
         Livro livro = livrosRepository.getLivroById(emprestimoRequest.getId_livro());
 
-        if (usuario == null || livro == null || livro.isEh_emprestado()) {
+        if (usuario == null || livro == null || livro.isEmprestado()) {
             if(usuario == null)
                 return ResponseEntity.status(404).body("usuario não encontrado");
 
             else if(livro == null)
                 return ResponseEntity.status(404).body("livro não encontrado");
 
-            else if(livro.isEh_emprestado())
+            else if(livro.isEmprestado())
                 return ResponseEntity.status(403).body("livro já foi emprestado");
 
             else return null;
@@ -43,7 +43,7 @@ public class EmprestimosService {
             Emprestimo emprestimo = new Emprestimo();
             emprestimo.setUsuario(usuario);
             emprestimo.setLivro(livro);
-            livro.setEh_emprestado(true);
+            livro.setEmprestado(true);
             emprestimo.setData_emprestimo(LocalDate.now());
             emprestimo.setDevolvido(false);
             return ResponseEntity.status(201).body(emprestimosRepository.save(emprestimo));
@@ -72,7 +72,7 @@ public class EmprestimosService {
             } else {
                 emprestimo.setDate_devolucao(LocalDate.now());
                 emprestimo.setDevolvido(true);
-                livro.setEh_emprestado(false);
+                livro.setEmprestado(false);
                 return ResponseEntity.status(201).body(emprestimosRepository.save(emprestimo));
             }
         }

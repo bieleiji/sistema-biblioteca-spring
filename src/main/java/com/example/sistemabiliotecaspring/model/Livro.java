@@ -10,13 +10,15 @@ public class Livro {
     private Long id;
 
     private String nome;
-    private boolean eh_emprestado;
+
+    @Column(name = "eh_emprestado")
+    private boolean emprestado;
 
     public Livro() {}
 
-    public Livro(String nome, boolean eh_emprestado) {
+    public Livro(String nome, boolean emprestado) {
         this.nome = nome;
-        this.eh_emprestado = eh_emprestado;
+        this.emprestado = emprestado;
     }
 
     public Long getId() {
@@ -35,11 +37,11 @@ public class Livro {
         this.nome = nome;
     }
 
-    public boolean isEh_emprestado() {
-        return eh_emprestado;
+    public boolean isEmprestado() {
+        return emprestado;
     }
 
-    public void setEh_emprestado(boolean eh_emprestado) {
-        this.eh_emprestado = eh_emprestado;
+    public void setEmprestado(boolean emprestado) {
+        this.emprestado = emprestado;
     }
 }
