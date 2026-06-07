@@ -24,8 +24,16 @@ public class EmprestimosService {
     @Autowired
     private UsuariosRepository usuariosRepository;
 
-    public ResponseEntity<Object> emprestarLivro(long id, EmprestimoRequest emprestimoRequest) {
-        Usuario usuario = usuariosRepository.findById(id);
+    @Autowired
+    private TokenService tokenService;
+
+    public ResponseEntity<Object> emprestarLivro(String token, EmprestimoRequest emprestimoRequest) {
+        String email = tokenService.extrairSubject(token);
+
+        if(tokenService.ehTokenInvalido(token, email))
+            return ResponseEntity.status(404).body("token inválido");
+
+        Usuario usuario = usuariosRepository.findByEmail(email);
         Livro livro = livrosRepository.getLivroById(emprestimoRequest.getId_livro());
 
         if (usuario == null || livro == null || livro.isEmprestado()) {
@@ -50,8 +58,13 @@ public class EmprestimosService {
         }
     }
 
-    public ResponseEntity<Object> devolverLivro(long id, EmprestimoRequest emprestimoRequest) {
-        Usuario usuario = usuariosRepository.findById(id);
+    public ResponseEntity<Object> devolverLivro(String token, EmprestimoRequest emprestimoRequest) {
+        String email = tokenService.extrairSubject(token);
+
+        if(tokenService.ehTokenInvalido(token, email))
+            return ResponseEntity.status(404).body("token inválido");
+
+        Usuario usuario = usuariosRepository.findByEmail(email);
         Livro livro = livrosRepository.getLivroById(emprestimoRequest.getId_livro());
 
         if (usuario == null || livro == null) {

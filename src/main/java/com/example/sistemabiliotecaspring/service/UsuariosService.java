@@ -3,6 +3,7 @@ package com.example.sistemabiliotecaspring.service;
 import com.example.sistemabiliotecaspring.model.Usuario;
 import com.example.sistemabiliotecaspring.repository.UsuariosRepository;
 import com.example.sistemabiliotecaspring.dto.UsuarioRequest;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -11,17 +12,16 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
-
 @Service
 public class UsuariosService {
-    private final PasswordEncoder passwordEncoder;
-    private final UsuariosRepository usuariosRepository;
+    @Autowired
+    private PasswordEncoder passwordEncoder;
 
-    public UsuariosService(UsuariosRepository usuariosRepository, PasswordEncoder passwordEncoder) {
-        this.usuariosRepository = usuariosRepository;
-        this.passwordEncoder = passwordEncoder;
-    }
+    @Autowired
+    private UsuariosRepository usuariosRepository;
+
+    @Autowired
+    private TokenService tokenService;
 
     public Usuario salvarUsuario(UsuarioRequest usuarioRequest) {
         Usuario usuario = new Usuario();
@@ -45,6 +45,6 @@ public class UsuariosService {
         if(!passwordEncoder.matches(usuarioRequest.getSenha(), usuario.getSenha()))
             return  ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
 
-        return ResponseEntity.status(HttpStatus.OK).body(usuario.toString());
+        return ResponseEntity.status(HttpStatus.OK).body(tokenService.gerarToken(usuario));
     }
 }

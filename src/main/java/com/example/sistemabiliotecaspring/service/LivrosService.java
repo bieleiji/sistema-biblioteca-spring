@@ -20,6 +20,9 @@ public class LivrosService {
     public Page<Livro> getLivros(int page, int size, String titulo, Boolean ehEmprestado) {
         Pageable pageable = PageRequest.of(page, size);
 
+        if(titulo != null && ehEmprestado != null)
+            return livrosRepository.findByNomeContainingIgnoreCaseAndEmprestado(titulo, ehEmprestado, pageable);
+
         if(titulo != null)
             return livrosRepository.findByNomeContainingIgnoreCase(titulo, pageable);
 
