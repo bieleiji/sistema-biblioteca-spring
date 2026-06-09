@@ -23,7 +23,7 @@ public class TokenService {
     public String gerarToken(Usuario usuario) {
         return Jwts.builder()
                 .subject(usuario.getEmail())
-                .claim("Role", usuario.getRole())
+                .claim("Role", usuario.getRole().toString())
                 .issuedAt(new Date())
                 .expiration(new Date(System.currentTimeMillis() + 86400000))
                 .signWith(secretKey)

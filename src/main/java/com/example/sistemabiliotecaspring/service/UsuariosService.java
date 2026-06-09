@@ -1,5 +1,6 @@
 package com.example.sistemabiliotecaspring.service;
 
+import com.example.sistemabiliotecaspring.model.Role;
 import com.example.sistemabiliotecaspring.model.Usuario;
 import com.example.sistemabiliotecaspring.repository.UsuariosRepository;
 import com.example.sistemabiliotecaspring.dto.UsuarioRequest;
@@ -23,27 +24,34 @@ public class UsuariosService {
     @Autowired
     private TokenService tokenService;
 
-    public Usuario salvarUsuario(UsuarioRequest usuarioRequest) {
+    public ResponseEntity<Object> salvarUsuario(UsuarioRequest usuarioRequest, String token) {
         Usuario usuario = new Usuario();
         usuario.setEmail(usuarioRequest.getEmail());
         usuario.setSenha(passwordEncoder.encode(usuarioRequest.getSenha()));
         usuario.setNome(usuarioRequest.getNome());
 
+        if(usuarioRequest.getRole() != null) {
+            String role = tokenService.obterClaims(token).get("Role", String.class);
 
-        return usuariosRepository.save(usuario);
+            if (role.equals(Role.ADMIN.toString()) || (!usuarioRequest.getRole().equals(Role.ADMIN) && !usuario.getRole().equals(Role.ADMIN)))
+                usuario.setRole(usuarioRequest.getRole());
+
+            else return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Apenas ADMINs podem definir outros ADMINs");
+        }
+        return ResponseEntity.status(HttpStatus.OK).body(usuariosRepository.save(usuario));
     }
 
     public Page<Usuario> listarUsuarios(int page, int size) {
-        Pageable pageable =  PageRequest.of(page, size);
+        Pageable pageable = PageRequest.of(page, size);
         return usuariosRepository.findAll(pageable);
     }
 
     public ResponseEntity<String> logar(UsuarioRequest usuarioRequest) {
         Usuario usuario = usuariosRepository.findByEmail(usuarioRequest.getEmail());
 
-        if(usuario == null) return  ResponseEntity.notFound().build();
+        if(usuario == null) return  ResponseEntity.status(HttpStatus.NOT_FOUND).body("Usuário não encontrado");
         if(!passwordEncoder.matches(usuarioRequest.getSenha(), usuario.getSenha()))
-            return  ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+            return  ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Senha incorreta");
 
         return ResponseEntity.status(HttpStatus.OK).body(tokenService.gerarToken(usuario));
     }

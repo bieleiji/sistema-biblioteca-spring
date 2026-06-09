@@ -27,17 +27,27 @@ public class LivrosController {
     }
 
     @PostMapping
-    public Livro salvarLivro(@RequestBody LivroRequest livroRequest){
-        return livrosService.salvarLivro(livroRequest);
+    public ResponseEntity<Object> salvarLivro(
+            @RequestHeader("Authorization") String authHeader,
+            @RequestBody LivroRequest livroRequest){
+        String token = authHeader.replace("Bearer ", "");
+        return livrosService.salvarLivro(livroRequest, token);
     }
 
     @PatchMapping("/{id}")
-    public Livro atualizarLivro(@PathVariable long id, @RequestBody LivroRequest livroRequest){
-        return livrosService.atualizarLivro(id, livroRequest);
+    public ResponseEntity<Object> atualizarLivro(
+            @RequestHeader("Authorization") String authHeader,
+            @PathVariable long id,
+            @RequestBody LivroRequest livroRequest){
+        String token = authHeader.replace("Bearer ", "");
+        return livrosService.atualizarLivro(id, livroRequest, token);
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<String> deletarLivro(@PathVariable long id){
-        return livrosService.deletarLivro(id);
+    public ResponseEntity<String> deletarLivro(
+            @RequestHeader("Authorization") String authHeader,
+            @PathVariable long id){
+        String token = authHeader.replace("Bearer ", "");
+        return livrosService.deletarLivro(id, token);
     }
 }

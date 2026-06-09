@@ -12,6 +12,7 @@ public class Usuario {
     private String nome;
     private String email;
     private String senha;
+    private Role role = Role.USUARIO;
 
     public Long getId() {
         return id;
@@ -43,5 +44,13 @@ public class Usuario {
 
     public void setSenha(String senha) {
         this.senha = senha;
+    }
+
+    public Role getRole() {
+        return role;
+    }
+
+    public void setRole(Role role) {
+        this.role = role;
     }
 }

@@ -1,5 +1,6 @@
 package com.example.sistemabiliotecaspring.controller;
 
+import com.example.sistemabiliotecaspring.model.Role;
 import com.example.sistemabiliotecaspring.model.Usuario;
 import com.example.sistemabiliotecaspring.dto.UsuarioRequest;
 import com.example.sistemabiliotecaspring.service.UsuariosService;
@@ -17,8 +18,14 @@ public class UsuariosController {
     }
 
     @PostMapping("/criar_conta")
-    public Usuario salvarUsuario(@RequestBody UsuarioRequest usuarioRequest) {
-        return usuariosService.salvarUsuario(usuarioRequest);
+    public ResponseEntity<Object> salvarUsuario(
+            @RequestHeader(value = "Authorization", required = false) String authHeader,
+            @RequestBody UsuarioRequest usuarioRequest) {
+        String token = null;
+        if(authHeader != null)
+            token = authHeader.replace("Bearer ", "");
+
+        return usuariosService.salvarUsuario(usuarioRequest, token);
     }
 
     @GetMapping

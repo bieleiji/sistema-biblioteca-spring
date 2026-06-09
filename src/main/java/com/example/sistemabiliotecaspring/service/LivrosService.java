@@ -1,17 +1,25 @@
 package com.example.sistemabiliotecaspring.service;
 
 import com.example.sistemabiliotecaspring.model.Livro;
+import com.example.sistemabiliotecaspring.model.Role;
 import com.example.sistemabiliotecaspring.repository.LivrosRepository;
 import com.example.sistemabiliotecaspring.dto.LivroRequest;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+
+import java.util.Objects;
 
 @Service
 public class LivrosService {
     private final LivrosRepository livrosRepository;
+
+    @Autowired
+    private TokenService tokenService;
 
     public LivrosService(LivrosRepository livrosRepository)  {
         this.livrosRepository = livrosRepository;
@@ -32,32 +40,42 @@ public class LivrosService {
         return livrosRepository.findAll(pageable);
     }
 
-    public Livro salvarLivro(LivroRequest livroRequest) {
+    public ResponseEntity<Object> salvarLivro(LivroRequest livroRequest, String token) {
+        if(!Objects.equals(tokenService.obterClaims(token).get("Role", String.class), Role.ADMIN.toString()))
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Apenas ADMINs podem acrescentar livros ao repositório");
+
         Livro livroAdicionado = new Livro();
         livroAdicionado.setNome(livroRequest.getNome());
         livrosRepository.save(livroAdicionado);
 
-        return livroAdicionado;
+        return ResponseEntity.status(HttpStatus.OK).body(livroAdicionado);
     }
 
-    public Livro atualizarLivro(long id, LivroRequest livroRequest) {
+    public ResponseEntity<Object> atualizarLivro(long id, LivroRequest livroRequest, String token) {
+        if(!Objects.equals(tokenService.obterClaims(token).get("Role", String.class), Role.ADMIN.toString()))
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Apenas ADMINs podem alterar livros no repositório");
+
+
         Livro livroAtualizado = livrosRepository.findById(id).orElse(null);
 
         if(livroAtualizado == null) return null;
 
         if(livroRequest.getNome() != null)
             if(!livroRequest.getNome().isBlank())
-            livroAtualizado.setNome(livroRequest.getNome());
+                livroAtualizado.setNome(livroRequest.getNome());
 
         if(livroRequest.isEh_emprestado() != livroAtualizado.isEmprestado())
             livroAtualizado.setEmprestado(livroRequest.isEh_emprestado());
 
-        return livrosRepository.save(livroAtualizado);
+        return ResponseEntity.status(HttpStatus.OK).body(livrosRepository.save(livroAtualizado));
     }
 
-    public ResponseEntity<String> deletarLivro(long id) {
+    public ResponseEntity<String> deletarLivro(long id, String token) {
+        if(!Objects.equals(tokenService.obterClaims(token).get("Role", String.class), Role.ADMIN.toString()))
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Apenas ADMINs podem deletar livros no repositório");
+
         if(livrosRepository.existsById(id))
             livrosRepository.deleteById(id);
-        return ResponseEntity.status(200).body("Livro deletado com sucesso");
+        return ResponseEntity.status(HttpStatus.OK).body("Livro deletado com sucesso");
     }
 }
