@@ -12,6 +12,16 @@ public class EmprestimosController {
     @Autowired
     private EmprestimosService emprestimosService;
 
+    @GetMapping
+    public ResponseEntity<Object> mostrarEmprestimosUsuario(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(required = false) Boolean devolvido,
+            @RequestHeader("Authorization") String authHeader) {
+        String token = authHeader.replace("Bearer ", "");
+        return emprestimosService.mostrarEmprestimosUsuario(token, page, size, devolvido);
+    }
+
     @PostMapping("/emprestar")
     public ResponseEntity<Object> emprestarLivro(
             @RequestHeader("Authorization") String authHeader,

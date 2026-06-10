@@ -1,6 +1,5 @@
 package com.example.sistemabiliotecaspring.controller;
 
-import com.example.sistemabiliotecaspring.model.Role;
 import com.example.sistemabiliotecaspring.model.Usuario;
 import com.example.sistemabiliotecaspring.dto.UsuarioRequest;
 import com.example.sistemabiliotecaspring.service.UsuariosService;
@@ -21,7 +20,7 @@ public class UsuariosController {
     public ResponseEntity<Object> salvarUsuario(
             @RequestHeader(value = "Authorization", required = false) String authHeader,
             @RequestBody UsuarioRequest usuarioRequest) {
-        String token = null;
+        String token = "";
         if(authHeader != null)
             token = authHeader.replace("Bearer ", "");
 

@@ -16,7 +16,7 @@ public class UsuarioRequest {
     @Column(unique = true)
     private String email;
 
-    private Role role;
+    private Role role = Role.USUARIO;
 
     public String getNome() {
         return nome;

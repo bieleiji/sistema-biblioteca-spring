@@ -10,8 +10,12 @@ public class Usuario {
     private Long id;
 
     private String nome;
+
+    @Column(unique = true)
     private String email;
     private String senha;
+
+    @Enumerated(EnumType.STRING)
     private Role role = Role.USUARIO;
 
     public Long getId() {

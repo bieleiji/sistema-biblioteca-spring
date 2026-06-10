@@ -13,6 +13,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.Optional;
+
 @Service
 public class UsuariosService {
     @Autowired
@@ -24,20 +26,28 @@ public class UsuariosService {
     @Autowired
     private TokenService tokenService;
 
+    private boolean ehEmailRepetido(String email) {
+        return (usuariosRepository.findByEmail(email) != null);
+    }
+
     public ResponseEntity<Object> salvarUsuario(UsuarioRequest usuarioRequest, String token) {
+        String role = "";
         Usuario usuario = new Usuario();
-        usuario.setEmail(usuarioRequest.getEmail());
+
         usuario.setSenha(passwordEncoder.encode(usuarioRequest.getSenha()));
         usuario.setNome(usuarioRequest.getNome());
 
-        if(usuarioRequest.getRole() != null) {
-            String role = tokenService.obterClaims(token).get("Role", String.class);
+        if(ehEmailRepetido(usuarioRequest.getEmail()))
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("este email já está sendo utilizado");
+        else usuario.setEmail(usuarioRequest.getEmail());
 
-            if (role.equals(Role.ADMIN.toString()) || (!usuarioRequest.getRole().equals(Role.ADMIN) && !usuario.getRole().equals(Role.ADMIN)))
-                usuario.setRole(usuarioRequest.getRole());
+        if(!token.isBlank())
+             role = tokenService.obterClaims(token).get("Role", String.class);
 
-            else return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Apenas ADMINs podem definir outros ADMINs");
-        }
+        if (role.equals(Role.ADMIN.toString()) || (!usuarioRequest.getRole().equals(Role.ADMIN) && !usuario.getRole().equals(Role.ADMIN)))
+            usuario.setRole(usuarioRequest.getRole());
+        else return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Apenas ADMINs podem definir outros ADMINs");
+
         return ResponseEntity.status(HttpStatus.OK).body(usuariosRepository.save(usuario));
     }
 

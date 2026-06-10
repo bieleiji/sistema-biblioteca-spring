@@ -8,10 +8,15 @@ import com.example.sistemabiliotecaspring.repository.EmprestimosRepository;
 import com.example.sistemabiliotecaspring.repository.LivrosRepository;
 import com.example.sistemabiliotecaspring.repository.UsuariosRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.util.List;
 
 @Service
 public class EmprestimosService {
@@ -91,5 +96,21 @@ public class EmprestimosService {
         }
 
         return null;
+    }
+
+    public ResponseEntity<Object> mostrarEmprestimosUsuario(String token, int page, int size, Boolean devolvido) {
+        Usuario usuario = usuariosRepository.findByEmail(tokenService.extrairSubject(token));
+
+        if(usuario == null)
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("usuário não encontrado");
+
+        Pageable pageable = PageRequest.of(page, size);
+        Page<Emprestimo> pagina;
+
+        if(devolvido != null)
+            pagina = emprestimosRepository.findEmprestimosByUsuarioAndDevolvido(usuario,devolvido,pageable);
+        else
+            pagina = emprestimosRepository.findEmprestimosByUsuario(usuario,pageable);
+        return ResponseEntity.status(HttpStatus.OK).body(pagina);
     }
 }
