@@ -27,7 +27,7 @@ public class LivrosController {
     }
 
     @PostMapping
-    public ResponseEntity<Object> salvarLivro(
+    public ResponseEntity<Livro> salvarLivro(
             @RequestHeader("Authorization") String authHeader,
             @RequestBody LivroRequest livroRequest){
         String token = authHeader.replace("Bearer ", "");
@@ -35,7 +35,7 @@ public class LivrosController {
     }
 
     @PatchMapping("/{id}")
-    public ResponseEntity<Object> atualizarLivro(
+    public ResponseEntity<Livro> atualizarLivro(
             @RequestHeader("Authorization") String authHeader,
             @PathVariable long id,
             @RequestBody LivroRequest livroRequest){

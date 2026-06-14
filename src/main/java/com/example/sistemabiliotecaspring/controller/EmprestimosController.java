@@ -1,8 +1,10 @@
 package com.example.sistemabiliotecaspring.controller;
 
 import com.example.sistemabiliotecaspring.dto.EmprestimoRequest;
+import com.example.sistemabiliotecaspring.model.Emprestimo;
 import com.example.sistemabiliotecaspring.service.EmprestimosService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -13,7 +15,7 @@ public class EmprestimosController {
     private EmprestimosService emprestimosService;
 
     @GetMapping
-    public ResponseEntity<Object> mostrarEmprestimosUsuario(
+    public ResponseEntity<Page<Emprestimo>> mostrarEmprestimosUsuario(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(required = false) Boolean devolvido,

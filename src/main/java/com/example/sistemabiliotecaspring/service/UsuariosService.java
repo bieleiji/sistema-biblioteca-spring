@@ -1,5 +1,8 @@
 package com.example.sistemabiliotecaspring.service;
 
+import com.example.sistemabiliotecaspring.exception.RecursoEmConflitoException;
+import com.example.sistemabiliotecaspring.exception.RecursoNaoAutorizadoException;
+import com.example.sistemabiliotecaspring.exception.RecursoNaoEncontradoException;
 import com.example.sistemabiliotecaspring.model.Role;
 import com.example.sistemabiliotecaspring.model.Usuario;
 import com.example.sistemabiliotecaspring.repository.UsuariosRepository;
@@ -12,8 +15,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-
-import java.util.Optional;
 
 @Service
 public class UsuariosService {
@@ -38,7 +39,7 @@ public class UsuariosService {
         usuario.setNome(usuarioRequest.getNome());
 
         if(ehEmailRepetido(usuarioRequest.getEmail()))
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("este email já está sendo utilizado");
+            throw new RecursoEmConflitoException("este email já está sendo utilizado");
         else usuario.setEmail(usuarioRequest.getEmail());
 
         if(!token.isBlank())
@@ -46,7 +47,7 @@ public class UsuariosService {
 
         if (role.equals(Role.ADMIN.toString()) || (!usuarioRequest.getRole().equals(Role.ADMIN) && !usuario.getRole().equals(Role.ADMIN)))
             usuario.setRole(usuarioRequest.getRole());
-        else return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Apenas ADMINs podem definir outros ADMINs");
+        else throw new RecursoNaoAutorizadoException("Apenas ADMINs podem definir outros ADMINs");
 
         return ResponseEntity.status(HttpStatus.OK).body(usuariosRepository.save(usuario));
     }
@@ -59,9 +60,9 @@ public class UsuariosService {
     public ResponseEntity<String> logar(UsuarioRequest usuarioRequest) {
         Usuario usuario = usuariosRepository.findByEmail(usuarioRequest.getEmail());
 
-        if(usuario == null) return  ResponseEntity.status(HttpStatus.NOT_FOUND).body("Usuário não encontrado");
+        if(usuario == null) throw new RecursoNaoEncontradoException("Usuário não encontrado");
         if(!passwordEncoder.matches(usuarioRequest.getSenha(), usuario.getSenha()))
-            return  ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Senha incorreta");
+            throw new RecursoNaoAutorizadoException("Senha incorreta");
 
         return ResponseEntity.status(HttpStatus.OK).body(tokenService.gerarToken(usuario));
     }

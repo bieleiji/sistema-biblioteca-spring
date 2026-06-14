@@ -3,7 +3,6 @@ package com.example.sistemabiliotecaspring.dto;
 import com.example.sistemabiliotecaspring.model.Role;
 import jakarta.persistence.Column;
 import jakarta.validation.constraints.NotBlank;
-import org.hibernate.annotations.ColumnDefault;
 
 public class UsuarioRequest {
     @NotBlank

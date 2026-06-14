@@ -1,5 +1,7 @@
 package com.example.sistemabiliotecaspring.service;
 
+import com.example.sistemabiliotecaspring.exception.RecursoNaoAutorizadoException;
+import com.example.sistemabiliotecaspring.exception.RecursoNaoEncontradoException;
 import com.example.sistemabiliotecaspring.model.Livro;
 import com.example.sistemabiliotecaspring.model.Role;
 import com.example.sistemabiliotecaspring.repository.LivrosRepository;
@@ -40,25 +42,25 @@ public class LivrosService {
         return livrosRepository.findAll(pageable);
     }
 
-    public ResponseEntity<Object> salvarLivro(LivroRequest livroRequest, String token) {
+    public ResponseEntity<Livro> salvarLivro(LivroRequest livroRequest, String token) {
         if(!Objects.equals(tokenService.obterClaims(token).get("Role", String.class), Role.ADMIN.toString()))
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Apenas ADMINs podem acrescentar livros ao repositório");
+            throw new RecursoNaoAutorizadoException("Apenas ADMINs podem acrescentar livros ao repositório");
 
         Livro livroAdicionado = new Livro();
         livroAdicionado.setNome(livroRequest.getNome());
-        livrosRepository.save(livroAdicionado);
 
-        return ResponseEntity.status(HttpStatus.OK).body(livroAdicionado);
+        return ResponseEntity.status(HttpStatus.OK).body(livrosRepository.save(livroAdicionado));
     }
 
-    public ResponseEntity<Object> atualizarLivro(long id, LivroRequest livroRequest, String token) {
+    public ResponseEntity<Livro> atualizarLivro(long id, LivroRequest livroRequest, String token) {
         if(!Objects.equals(tokenService.obterClaims(token).get("Role", String.class), Role.ADMIN.toString()))
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Apenas ADMINs podem alterar livros no repositório");
+            throw new RecursoNaoAutorizadoException("Apenas ADMINs podem alterar livros no repositório");
 
 
         Livro livroAtualizado = livrosRepository.findById(id).orElse(null);
 
-        if(livroAtualizado == null) return null;
+        if(livroAtualizado == null)
+            throw new RecursoNaoEncontradoException("livro não encontrado");
 
         if(livroRequest.getNome() != null)
             if(!livroRequest.getNome().isBlank())
@@ -72,7 +74,7 @@ public class LivrosService {
 
     public ResponseEntity<String> deletarLivro(long id, String token) {
         if(!Objects.equals(tokenService.obterClaims(token).get("Role", String.class), Role.ADMIN.toString()))
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Apenas ADMINs podem deletar livros no repositório");
+            throw new RecursoNaoAutorizadoException("Apenas ADMINs podem deletar livros no repositório");
 
         if(livrosRepository.existsById(id))
             livrosRepository.deleteById(id);
