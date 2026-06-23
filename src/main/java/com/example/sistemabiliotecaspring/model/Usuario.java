@@ -1,6 +1,7 @@
 package com.example.sistemabiliotecaspring.model;
 
 import jakarta.persistence.*;
+import org.springframework.stereotype.Component;
 
 @Entity(name = "usuarios")
 public class Usuario {

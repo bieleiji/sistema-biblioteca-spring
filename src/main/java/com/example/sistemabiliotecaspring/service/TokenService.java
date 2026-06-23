@@ -42,12 +42,7 @@ public class TokenService {
         return obterClaims(token).getSubject();
     }
 
-    private boolean isTokenExpirado(String token) {
+    public boolean isTokenExpirado(String token) {
         return obterClaims(token).getExpiration().before(new Date());
-    }
-
-    public boolean ehTokenInvalido(String token, String email) {
-        final String subjectToken = extrairSubject(token);
-        return (!subjectToken.equals(email) || isTokenExpirado(token));
     }
 }

@@ -6,6 +6,7 @@ import com.example.sistemabiliotecaspring.service.EmprestimosService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -19,24 +20,21 @@ public class EmprestimosController {
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(required = false) Boolean devolvido,
-            @RequestHeader("Authorization") String authHeader) {
-        String token = authHeader.replace("Bearer ", "");
-        return emprestimosService.mostrarEmprestimosUsuario(token, page, size, devolvido);
+            Authentication authentication) {
+        return emprestimosService.mostrarEmprestimosUsuario(authentication, page, size, devolvido);
     }
 
     @PostMapping("/emprestar")
     public ResponseEntity<Object> emprestarLivro(
-            @RequestHeader("Authorization") String authHeader,
+            Authentication authentication,
             @RequestBody EmprestimoRequest emprestimoRequest) {
-        String token = authHeader.replace("Bearer ", "");
-        return emprestimosService.emprestarLivro(token, emprestimoRequest);
+        return emprestimosService.emprestarLivro(authentication, emprestimoRequest);
     }
 
     @PostMapping("/devolver")
     public ResponseEntity<Object> devolverLivro(
-            @RequestHeader("Authorization") String authHeader,
+            Authentication authentication,
             @RequestBody EmprestimoRequest emprestimoRequest) {
-        String token = authHeader.replace("Bearer ", "");
-        return emprestimosService.devolverLivro(token, emprestimoRequest);
+        return emprestimosService.devolverLivro(authentication, emprestimoRequest);
     }
 }

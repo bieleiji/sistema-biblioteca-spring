@@ -16,6 +16,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -34,11 +35,8 @@ public class EmprestimosService {
     @Autowired
     private TokenService tokenService;
 
-    public ResponseEntity<Object> emprestarLivro(String token, EmprestimoRequest emprestimoRequest) {
-        String email = tokenService.extrairSubject(token);
-
-        if(tokenService.ehTokenInvalido(token, email))
-            throw new RecursoNaoAutenticadoException("token inválido");
+    public ResponseEntity<Object> emprestarLivro(Authentication authentication, EmprestimoRequest emprestimoRequest) {
+        String email = authentication.getName();
 
         Usuario usuario = usuariosRepository.findByEmail(email);
         Livro livro = livrosRepository.getLivroById(emprestimoRequest.getId_livro());
@@ -65,11 +63,8 @@ public class EmprestimosService {
         }
     }
 
-    public ResponseEntity<Object> devolverLivro(String token, EmprestimoRequest emprestimoRequest) {
-        String email = tokenService.extrairSubject(token);
-
-        if(tokenService.ehTokenInvalido(token, email))
-            throw new RecursoNaoAutenticadoException("token inválido");
+    public ResponseEntity<Object> devolverLivro(Authentication authentication, EmprestimoRequest emprestimoRequest) {
+        String email = authentication.getName();
 
         Usuario usuario = usuariosRepository.findByEmail(email);
         Livro livro = livrosRepository.getLivroById(emprestimoRequest.getId_livro());
@@ -100,8 +95,8 @@ public class EmprestimosService {
         return null;
     }
 
-    public ResponseEntity<Page<Emprestimo>> mostrarEmprestimosUsuario(String token, int page, int size, Boolean devolvido) {
-        Usuario usuario = usuariosRepository.findByEmail(tokenService.extrairSubject(token));
+    public ResponseEntity<Page<Emprestimo>> mostrarEmprestimosUsuario(Authentication authentication, int page, int size, Boolean devolvido) {
+        Usuario usuario = usuariosRepository.findByEmail(authentication.getName());
 
         if(usuario == null)
             throw new RecursoNaoEncontradoException("usuário não encontrado");

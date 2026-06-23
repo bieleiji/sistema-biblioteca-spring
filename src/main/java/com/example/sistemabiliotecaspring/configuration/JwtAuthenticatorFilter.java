@@ -1,5 +1,6 @@
 package com.example.sistemabiliotecaspring.configuration;
 
+import com.example.sistemabiliotecaspring.exception.RecursoNaoAutenticadoException;
 import com.example.sistemabiliotecaspring.service.TokenService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -8,10 +9,12 @@ import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 
+@Component
 public class JwtAuthenticatorFilter extends OncePerRequestFilter {
     private final TokenService tokenService;
     private final UsuarioDetailsService usuarioDetailsService;
@@ -32,14 +35,17 @@ public class JwtAuthenticatorFilter extends OncePerRequestFilter {
 
         token = token.replace("Bearer ", "");
 
-        String email = tokenService.extrairSubject(token);
+        if(!tokenService.isTokenExpirado(token)) {
+            String email = tokenService.extrairSubject(token);
+            UserDetails userDetails = usuarioDetailsService.loadUserByUsername(email);
 
-        UserDetails userDetails = usuarioDetailsService.loadUserByUsername(email);
+            UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken =
+                    new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
 
-        UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken =
-                new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
-
-        SecurityContextHolder.getContext().setAuthentication(usernamePasswordAuthenticationToken);
+            SecurityContextHolder.getContext().setAuthentication(usernamePasswordAuthenticationToken);
+        } else {
+            throw new RecursoNaoAutenticadoException("token invalido");
+        }
 
         filterChain.doFilter(request,response);
     }

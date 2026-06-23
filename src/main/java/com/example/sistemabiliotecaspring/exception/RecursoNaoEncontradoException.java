@@ -1,7 +1,7 @@
 package com.example.sistemabiliotecaspring.exception;
 
 public class RecursoNaoEncontradoException extends RuntimeException {
-    public RecursoNaoEncontradoException(String mensagem) {
-        super(mensagem);
+    public RecursoNaoEncontradoException(String message) {
+        super(message);
     }
 }
