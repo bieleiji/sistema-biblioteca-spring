@@ -3,19 +3,23 @@ package com.example.sistemabiliotecaspring.dto;
 import com.example.sistemabiliotecaspring.model.Role;
 import jakarta.persistence.Column;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 
 public class UsuarioRequest {
+    @NotNull
     @NotBlank
     private String nome;
 
+    @NotNull
     @NotBlank
     private String senha;
 
+    @NotNull
     @NotBlank
     @Column(unique = true)
     private String email;
 
-    private Role role = Role.USUARIO;
+    private Role role;
 
     public String getNome() {
         return nome;

@@ -28,12 +28,17 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) {
         http
                 .csrf(AbstractHttpConfigurer::disable)
-                .authorizeHttpRequests(authorizeRequests ->
-                        authorizeRequests.requestMatchers(
-                                "/usuarios/criar_conta",
-                                "/usuarios/login"
-                                ).permitAll()
-                                .anyRequest().authenticated())
+                .authorizeHttpRequests(authorizeRequests -> {
+                    authorizeRequests.requestMatchers(
+                            "/usuarios/listar"
+                            ).hasRole("ADMIN");
+
+                    authorizeRequests.requestMatchers(
+                            "/usuarios/criar_conta",
+                                    "/usuarios/login"
+                            ).permitAll()
+                                .anyRequest().authenticated();
+                })
                 .httpBasic(httpBasic ->{})
                 .addFilterBefore(jwtAuthenticatorFilter, UsernamePasswordAuthenticationFilter.class);
 

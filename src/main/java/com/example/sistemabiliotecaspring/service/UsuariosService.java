@@ -13,6 +13,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -31,9 +32,11 @@ public class UsuariosService {
         return (usuariosRepository.findByEmail(email) != null);
     }
 
-    public ResponseEntity<Object> salvarUsuario(UsuarioRequest usuarioRequest, String token) {
+    public ResponseEntity<Object> salvarUsuario(UsuarioRequest usuarioRequest, Authentication authentication) {
         String role = "";
         Usuario usuario = new Usuario();
+
+        if(usuarioRequest.getRole() == null) usuarioRequest.setRole(Role.USUARIO);
 
         usuario.setSenha(passwordEncoder.encode(usuarioRequest.getSenha()));
         usuario.setNome(usuarioRequest.getNome());
@@ -42,19 +45,14 @@ public class UsuariosService {
             throw new RecursoEmConflitoException("este email já está sendo utilizado");
         else usuario.setEmail(usuarioRequest.getEmail());
 
-        if(!token.isBlank())
-             role = tokenService.obterClaims(token).get("Role", String.class);
+        if(authentication.isAuthenticated())
+             role = authentication.getAuthorities().toString();
 
-        if (role.equals(Role.ADMIN.toString()) || (!usuarioRequest.getRole().equals(Role.ADMIN) && !usuario.getRole().equals(Role.ADMIN)))
+        if (role.contains("ROLE_ADMIN") || (!usuarioRequest.getRole().equals(Role.ADMIN)))
             usuario.setRole(usuarioRequest.getRole());
         else throw new RecursoNaoAutorizadoException("Apenas ADMINs podem definir outros ADMINs");
 
         return ResponseEntity.status(HttpStatus.OK).body(usuariosRepository.save(usuario));
-    }
-
-    public Page<Usuario> listarUsuarios(int page, int size) {
-        Pageable pageable = PageRequest.of(page, size);
-        return usuariosRepository.findAll(pageable);
     }
 
     public ResponseEntity<String> logar(UsuarioRequest usuarioRequest) {
@@ -65,5 +63,56 @@ public class UsuariosService {
             throw new RecursoNaoAutorizadoException("Senha incorreta");
 
         return ResponseEntity.status(HttpStatus.OK).body(tokenService.gerarToken(usuario));
+    }
+
+    public Page<Usuario> listarUsuarios(int page, int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        return usuariosRepository.findAll(pageable);
+    }
+
+    public ResponseEntity<String> atualizarUsuario(Authentication authentication, UsuarioRequest usuarioRequest) {
+        String role = authentication.getAuthorities().toString();
+        Usuario usuario = usuariosRepository.findByEmail(authentication.getName());
+
+        if(usuario == null)
+            throw new RecursoNaoEncontradoException("usuario não encontrado");
+
+        if(usuarioRequest.getNome() != null)
+            if(!usuarioRequest.getNome().isBlank())
+                usuario.setNome(usuarioRequest.getNome());
+
+        if(usuarioRequest.getSenha() != null)
+            if(!usuarioRequest.getSenha().isBlank())
+                usuario.setSenha(passwordEncoder.encode(usuarioRequest.getSenha()));
+
+        if(usuarioRequest.getEmail() != null)
+            if(!usuarioRequest.getEmail().isBlank())
+                if(!ehEmailRepetido(usuarioRequest.getEmail()))
+                    usuario.setEmail(usuarioRequest.getEmail());
+                else throw new RecursoEmConflitoException("este email já está sendo utilizado");
+
+        if(authentication.isAuthenticated())
+            role = authentication.getAuthorities().toString();
+
+        if(usuarioRequest.getRole() != null)
+            if (role.contains("ROLE_ADMIN") || (!usuarioRequest.getRole().equals(Role.ADMIN)))
+                usuario.setRole(usuarioRequest.getRole());
+            else throw new RecursoNaoAutorizadoException("Apenas ADMINs podem definir outros ADMINs");
+
+        return ResponseEntity.status(HttpStatus.OK).body(usuariosRepository.save(usuario).toString()
+                .replace(",", ", \n")
+                .replace("Usuario{","\n")
+                .replace("}","\n") +
+                "\nnovo token: " + tokenService.gerarToken(usuario));
+    }
+
+    public ResponseEntity<String> excluirUsuario(Authentication authentication) {
+        Usuario usuario = usuariosRepository.findByEmail(authentication.getName());
+
+        if(usuario == null)
+            throw new RecursoNaoEncontradoException("Usuario não encontrado");
+
+        usuariosRepository.delete(usuario);
+        return ResponseEntity.status(HttpStatus.OK).body("Usuario excluído com êxito!");
     }
 }

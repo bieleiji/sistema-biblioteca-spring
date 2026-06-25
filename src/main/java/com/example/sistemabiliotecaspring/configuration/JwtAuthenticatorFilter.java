@@ -35,7 +35,9 @@ public class JwtAuthenticatorFilter extends OncePerRequestFilter {
 
         token = token.replace("Bearer ", "");
 
-        if(!tokenService.isTokenExpirado(token)) {
+        if (tokenService.isTokenExpirado(token)) {
+            throw new RecursoNaoAutenticadoException("token invalido");
+        } else {
             String email = tokenService.extrairSubject(token);
             UserDetails userDetails = usuarioDetailsService.loadUserByUsername(email);
 
@@ -43,8 +45,6 @@ public class JwtAuthenticatorFilter extends OncePerRequestFilter {
                     new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
 
             SecurityContextHolder.getContext().setAuthentication(usernamePasswordAuthenticationToken);
-        } else {
-            throw new RecursoNaoAutenticadoException("token invalido");
         }
 
         filterChain.doFilter(request,response);
