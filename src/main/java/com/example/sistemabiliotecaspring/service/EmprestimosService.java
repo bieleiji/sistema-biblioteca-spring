@@ -1,6 +1,6 @@
 package com.example.sistemabiliotecaspring.service;
 
-import com.example.sistemabiliotecaspring.dto.EmprestimoRequest;
+import com.example.sistemabiliotecaspring.dto.emprestimoDTO.EmprestimoRequest;
 import com.example.sistemabiliotecaspring.exception.RecursoEmConflitoException;
 import com.example.sistemabiliotecaspring.exception.RecursoNaoEncontradoException;
 import com.example.sistemabiliotecaspring.model.Emprestimo;
@@ -47,7 +47,7 @@ public class EmprestimosService {
             livro.setEmprestado(true);
             emprestimo.setData_emprestimo(LocalDate.now());
             emprestimo.setDevolvido(false);
-            return ResponseEntity.status(201).body(emprestimosRepository.save(emprestimo));
+            return ResponseEntity.status(HttpStatus.CREATED).body(emprestimosRepository.save(emprestimo));
         }
     }
 

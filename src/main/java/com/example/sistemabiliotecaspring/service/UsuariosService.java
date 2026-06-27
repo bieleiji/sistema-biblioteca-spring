@@ -1,11 +1,14 @@
 package com.example.sistemabiliotecaspring.service;
 
+import com.example.sistemabiliotecaspring.dto.usuarioDTO.AtualizarUsuarioRequest;
+import com.example.sistemabiliotecaspring.dto.usuarioDTO.LogarUsuarioRequest;
+import com.example.sistemabiliotecaspring.exception.RecursoEmConflitoException;
 import com.example.sistemabiliotecaspring.exception.RecursoNaoAutorizadoException;
 import com.example.sistemabiliotecaspring.exception.RecursoNaoEncontradoException;
 import com.example.sistemabiliotecaspring.model.Role;
 import com.example.sistemabiliotecaspring.model.Usuario;
 import com.example.sistemabiliotecaspring.repository.UsuariosRepository;
-import com.example.sistemabiliotecaspring.dto.UsuarioRequest;
+import com.example.sistemabiliotecaspring.dto.usuarioDTO.SalvarUsuarioRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -27,30 +30,37 @@ public class UsuariosService {
     @Autowired
     private TokenService tokenService;
 
-    public ResponseEntity<Object> salvarUsuario(UsuarioRequest usuarioRequest, Authentication authentication) {
+    private boolean ehEmailRepetido(String email) {
+        return (usuariosRepository.findByEmail(email) != null);
+    }
+
+    public ResponseEntity<Object> salvarUsuario(SalvarUsuarioRequest salvarUsuarioRequest, Authentication authentication) {
         Usuario usuario = new Usuario();
 
-        if(usuarioRequest.getRole() == null) usuarioRequest.setRole(Role.USUARIO);
+        if(salvarUsuarioRequest.getRole() == null) salvarUsuarioRequest.setRole(Role.USUARIO);
 
-        usuario.setSenha(passwordEncoder.encode(usuarioRequest.getSenha()));
-        usuario.setNome(usuarioRequest.getNome());
-        usuario.setEmail(usuarioRequest.getEmail());
+        usuario.setSenha(passwordEncoder.encode(salvarUsuarioRequest.getSenha()));
+        usuario.setNome(salvarUsuarioRequest.getNome());
 
-    if(authentication != null) {
+        if (ehEmailRepetido(salvarUsuarioRequest.getEmail()))
+            throw new RecursoEmConflitoException("email já está sendo utilizado");
+        else usuario.setEmail(salvarUsuarioRequest.getEmail());
+
+        if(authentication != null) {
         if (authentication.getAuthorities().toString().contains("ROLE_ADMIN") ||
-                !usuarioRequest.getRole().equals(Role.ADMIN))
-            usuario.setRole(usuarioRequest.getRole());
+                !salvarUsuarioRequest.getRole().equals(Role.ADMIN))
+            usuario.setRole(salvarUsuarioRequest.getRole());
         else throw new RecursoNaoAutorizadoException("Apenas ADMINs podem definir outros ADMINs");
     }
 
         return ResponseEntity.status(HttpStatus.OK).body(usuariosRepository.save(usuario));
     }
 
-    public ResponseEntity<String> logar(UsuarioRequest usuarioRequest) {
-        Usuario usuario = usuariosRepository.findByEmail(usuarioRequest.getEmail());
+    public ResponseEntity<String> logar(LogarUsuarioRequest logarUsuarioRequest) {
+        Usuario usuario = usuariosRepository.findByEmail(logarUsuarioRequest.getEmail());
 
         if(usuario == null) throw new RecursoNaoEncontradoException("Usuário não encontrado");
-        if(!passwordEncoder.matches(usuarioRequest.getSenha(), usuario.getSenha()))
+        if(!passwordEncoder.matches(logarUsuarioRequest.getSenha(), usuario.getSenha()))
             throw new RecursoNaoAutorizadoException("Senha incorreta");
 
         return ResponseEntity.status(HttpStatus.OK).body(tokenService.gerarToken(usuario));
@@ -61,30 +71,40 @@ public class UsuariosService {
         return usuariosRepository.findAll(pageable);
     }
 
-    public ResponseEntity<String> atualizarUsuario(Authentication authentication, UsuarioRequest usuarioRequest) {
+    private static boolean ehCampoAtualizavel(String dadoNovo) {
+        return (dadoNovo != null && !dadoNovo.isBlank());
+    }
+
+    public ResponseEntity<String> atualizarUsuario(Authentication authentication,
+                                                   AtualizarUsuarioRequest atualizarUsuarioRequest) {
         String role = authentication.getAuthorities().toString();
         Usuario usuario = usuariosRepository.findByEmail(authentication.getName());
 
-        if(usuario == null)
+        if (usuario == null)
             throw new RecursoNaoEncontradoException("usuario não encontrado");
-
-        usuario.setNome(usuarioRequest.getNome());
-        usuario.setSenha(passwordEncoder.encode(usuarioRequest.getSenha()));
-        usuario.setEmail(usuarioRequest.getEmail());
 
         if(authentication.isAuthenticated())
             role = authentication.getAuthorities().toString();
 
-        if(usuarioRequest.getRole() != null)
-            if (role.contains("ROLE_ADMIN") || (!usuarioRequest.getRole().equals(Role.ADMIN)))
-                usuario.setRole(usuarioRequest.getRole());
+        if(atualizarUsuarioRequest.getRole() != null)
+            if (role.contains("ROLE_ADMIN") || (!atualizarUsuarioRequest.getRole().equals(Role.ADMIN)))
+                usuario.setRole(atualizarUsuarioRequest.getRole());
             else throw new RecursoNaoAutorizadoException("Apenas ADMINs podem definir outros ADMINs");
+
+        if (ehCampoAtualizavel(atualizarUsuarioRequest.getNome()))
+            usuario.setNome(atualizarUsuarioRequest.getNome());
+
+        if (ehCampoAtualizavel(atualizarUsuarioRequest.getSenha()))
+            usuario.setSenha(passwordEncoder.encode(atualizarUsuarioRequest.getSenha()));
+
+        if (ehCampoAtualizavel(atualizarUsuarioRequest.getEmail()))
+            usuario.setEmail(atualizarUsuarioRequest.getEmail());
 
         return ResponseEntity.status(HttpStatus.OK).body(usuariosRepository.save(usuario).toString()
                 .replace(",", ", \n")
                 .replace("Usuario{","\n")
                 .replace("}","\n") +
-                "\nnovo token: " + tokenService.gerarToken(usuario));
+                "\nnovo token:\n" + tokenService.gerarToken(usuario));
     }
 
     public ResponseEntity<String> excluirUsuario(Authentication authentication) {

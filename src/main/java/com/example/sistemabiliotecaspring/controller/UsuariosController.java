@@ -1,7 +1,9 @@
 package com.example.sistemabiliotecaspring.controller;
 
+import com.example.sistemabiliotecaspring.dto.usuarioDTO.AtualizarUsuarioRequest;
+import com.example.sistemabiliotecaspring.dto.usuarioDTO.LogarUsuarioRequest;
 import com.example.sistemabiliotecaspring.model.Usuario;
-import com.example.sistemabiliotecaspring.dto.UsuarioRequest;
+import com.example.sistemabiliotecaspring.dto.usuarioDTO.SalvarUsuarioRequest;
 import com.example.sistemabiliotecaspring.service.UsuariosService;
 import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
@@ -21,13 +23,13 @@ public class UsuariosController {
     @PostMapping("/criar_conta")
     public ResponseEntity<Object> salvarUsuario(
             Authentication authentication,
-            @Valid @RequestBody UsuarioRequest usuarioRequest) {
-        return usuariosService.salvarUsuario(usuarioRequest, authentication);
+            @Valid @RequestBody SalvarUsuarioRequest salvarUsuarioRequest) {
+        return usuariosService.salvarUsuario(salvarUsuarioRequest, authentication);
     }
 
     @PostMapping("/login")
-    public ResponseEntity<String> logar(@Valid @RequestBody UsuarioRequest usuarioRequest) {
-        return usuariosService.logar(usuarioRequest);
+    public ResponseEntity<String> logar(@Valid @RequestBody LogarUsuarioRequest logarUsuarioRequest) {
+        return usuariosService.logar(logarUsuarioRequest);
     }
 
     @GetMapping("/listar")
@@ -38,9 +40,9 @@ public class UsuariosController {
 
     @PatchMapping("/atualizar")
     public ResponseEntity<String> atualizarUsuario(Authentication authentication,
-                                                    @Valid @RequestBody UsuarioRequest usuarioRequest) {
+                                                    @Valid @RequestBody AtualizarUsuarioRequest atualizarUsuarioRequest) {
 
-        return usuariosService.atualizarUsuario(authentication, usuarioRequest);
+        return usuariosService.atualizarUsuario(authentication, atualizarUsuarioRequest);
     }
 
     @DeleteMapping("/excluir")

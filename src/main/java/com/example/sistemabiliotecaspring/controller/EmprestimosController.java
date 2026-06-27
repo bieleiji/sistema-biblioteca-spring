@@ -1,6 +1,6 @@
 package com.example.sistemabiliotecaspring.controller;
 
-import com.example.sistemabiliotecaspring.dto.EmprestimoRequest;
+import com.example.sistemabiliotecaspring.dto.emprestimoDTO.EmprestimoRequest;
 import com.example.sistemabiliotecaspring.model.Emprestimo;
 import com.example.sistemabiliotecaspring.service.EmprestimosService;
 import jakarta.validation.Valid;

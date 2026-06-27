@@ -1,4 +1,4 @@
-package com.example.sistemabiliotecaspring.dto;
+package com.example.sistemabiliotecaspring.dto.emprestimoDTO;
 
 import java.time.LocalDate;
 

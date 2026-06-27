@@ -1,13 +1,11 @@
-package com.example.sistemabiliotecaspring.dto;
+package com.example.sistemabiliotecaspring.dto.usuarioDTO;
 
 import com.example.sistemabiliotecaspring.model.Role;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 
-public class UsuarioRequest {
-    @NotNull
-    @NotBlank
+public class LogarUsuarioRequest {
     private String nome;
 
     @NotNull

@@ -4,8 +4,7 @@ import com.example.sistemabiliotecaspring.exception.RecursoNaoAutorizadoExceptio
 import com.example.sistemabiliotecaspring.exception.RecursoNaoEncontradoException;
 import com.example.sistemabiliotecaspring.model.Livro;
 import com.example.sistemabiliotecaspring.repository.LivrosRepository;
-import com.example.sistemabiliotecaspring.dto.LivroRequest;
-import org.springframework.beans.factory.annotation.Autowired;
+import com.example.sistemabiliotecaspring.dto.livroDTO.LivroRequest;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;

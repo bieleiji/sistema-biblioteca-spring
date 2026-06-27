@@ -1,7 +1,7 @@
 package com.example.sistemabiliotecaspring.controller;
 
 import com.example.sistemabiliotecaspring.model.Livro;
-import com.example.sistemabiliotecaspring.dto.LivroRequest;
+import com.example.sistemabiliotecaspring.dto.livroDTO.LivroRequest;
 import com.example.sistemabiliotecaspring.service.LivrosService;
 import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
