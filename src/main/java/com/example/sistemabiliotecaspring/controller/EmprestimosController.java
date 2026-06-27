@@ -3,6 +3,7 @@ package com.example.sistemabiliotecaspring.controller;
 import com.example.sistemabiliotecaspring.dto.EmprestimoRequest;
 import com.example.sistemabiliotecaspring.model.Emprestimo;
 import com.example.sistemabiliotecaspring.service.EmprestimosService;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
@@ -27,14 +28,14 @@ public class EmprestimosController {
     @PostMapping("/emprestar")
     public ResponseEntity<Object> emprestarLivro(
             Authentication authentication,
-            @RequestBody EmprestimoRequest emprestimoRequest) {
+            @Valid @RequestBody EmprestimoRequest emprestimoRequest) {
         return emprestimosService.emprestarLivro(authentication, emprestimoRequest);
     }
 
     @PostMapping("/devolver")
     public ResponseEntity<Object> devolverLivro(
             Authentication authentication,
-            @RequestBody EmprestimoRequest emprestimoRequest) {
+            @Valid @RequestBody EmprestimoRequest emprestimoRequest) {
         return emprestimosService.devolverLivro(authentication, emprestimoRequest);
     }
 }

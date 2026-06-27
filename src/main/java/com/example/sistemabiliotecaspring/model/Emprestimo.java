@@ -1,7 +1,6 @@
 package com.example.sistemabiliotecaspring.model;
 
 import jakarta.persistence.*;
-import jakarta.validation.constraints.NotNull;
 
 import java.time.LocalDate;
 
@@ -12,12 +11,10 @@ public class Emprestimo {
     @Column(name = "id_emprestimo")
     private Long id;
 
-    @NotNull(message = "Usuario não encontrado")
     @ManyToOne
     @JoinColumn(name = "id_usuario")
     private Usuario usuario;
 
-    @NotNull(message = "Livro não encontrado")
     @ManyToOne
     @JoinColumn(name = "id_livro")
     private Livro livro;

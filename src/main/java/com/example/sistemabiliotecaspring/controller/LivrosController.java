@@ -3,6 +3,7 @@ package com.example.sistemabiliotecaspring.controller;
 import com.example.sistemabiliotecaspring.model.Livro;
 import com.example.sistemabiliotecaspring.dto.LivroRequest;
 import com.example.sistemabiliotecaspring.service.LivrosService;
+import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -30,7 +31,7 @@ public class LivrosController {
     @PostMapping
     public ResponseEntity<Livro> salvarLivro(
             Authentication authentication,
-            @RequestBody LivroRequest livroRequest){
+            @Valid @RequestBody LivroRequest livroRequest){
         return livrosService.salvarLivro(livroRequest, authentication);
     }
 
@@ -38,7 +39,7 @@ public class LivrosController {
     public ResponseEntity<Livro> atualizarLivro(
             Authentication authentication,
             @PathVariable long id,
-            @RequestBody LivroRequest livroRequest){
+            @Valid @RequestBody LivroRequest livroRequest){
         return livrosService.atualizarLivro(id, livroRequest, authentication);
     }
 

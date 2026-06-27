@@ -1,8 +1,6 @@
 package com.example.sistemabiliotecaspring.model;
 
 import jakarta.persistence.*;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
 
 @Entity(name = "livros")
 public class Livro {
@@ -11,19 +9,12 @@ public class Livro {
     @Column(name = "id_livro")
     private Long id;
 
-    @NotNull
-    @NotBlank
     private String nome;
 
     @Column(name = "eh_emprestado")
     private boolean emprestado;
 
     public Livro() {}
-
-    public Livro(String nome, boolean emprestado) {
-        this.nome = nome;
-        this.emprestado = emprestado;
-    }
 
     public Long getId() {
         return id;

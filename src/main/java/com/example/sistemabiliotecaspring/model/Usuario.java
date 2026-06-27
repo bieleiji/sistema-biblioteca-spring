@@ -1,9 +1,6 @@
 package com.example.sistemabiliotecaspring.model;
 
 import jakarta.persistence.*;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
-import org.springframework.stereotype.Component;
 
 @Entity(name = "usuarios")
 public class Usuario {
@@ -12,17 +9,11 @@ public class Usuario {
     @Column(name = "id_usuario")
     private Long id;
 
-    @NotNull
-    @NotBlank
     private String nome;
 
-    @NotNull
-    @NotBlank
     @Column(unique = true)
     private String email;
 
-    @NotNull
-    @NotBlank
     private String senha;
 
     @Enumerated(EnumType.STRING)
@@ -70,13 +61,11 @@ public class Usuario {
 
     @Override
     public String toString() {
-        final StringBuilder sb = new StringBuilder("Usuario{");
-        sb.append("id=").append(id);
-        sb.append(", nome='").append(nome).append('\'');
-        sb.append(", email='").append(email).append('\'');
-        sb.append(", senha='").append(senha).append('\'');
-        sb.append(", role=").append(role);
-        sb.append('}');
-        return sb.toString();
+        return "Usuario{" + "id=" + id +
+                ", nome='" + nome + '\'' +
+                ", email='" + email + '\'' +
+                ", senha='" + senha + '\'' +
+                ", role=" + role +
+                '}';
     }
 }

@@ -3,6 +3,7 @@ package com.example.sistemabiliotecaspring.controller;
 import com.example.sistemabiliotecaspring.model.Usuario;
 import com.example.sistemabiliotecaspring.dto.UsuarioRequest;
 import com.example.sistemabiliotecaspring.service.UsuariosService;
+import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -20,12 +21,12 @@ public class UsuariosController {
     @PostMapping("/criar_conta")
     public ResponseEntity<Object> salvarUsuario(
             Authentication authentication,
-            @RequestBody UsuarioRequest usuarioRequest) {
+            @Valid @RequestBody UsuarioRequest usuarioRequest) {
         return usuariosService.salvarUsuario(usuarioRequest, authentication);
     }
 
     @PostMapping("/login")
-    public ResponseEntity<String> logar(@RequestBody UsuarioRequest usuarioRequest) {
+    public ResponseEntity<String> logar(@Valid @RequestBody UsuarioRequest usuarioRequest) {
         return usuariosService.logar(usuarioRequest);
     }
 
@@ -37,7 +38,7 @@ public class UsuariosController {
 
     @PatchMapping("/atualizar")
     public ResponseEntity<String> atualizarUsuario(Authentication authentication,
-                                                    @RequestBody UsuarioRequest usuarioRequest) {
+                                                    @Valid @RequestBody UsuarioRequest usuarioRequest) {
 
         return usuariosService.atualizarUsuario(authentication, usuarioRequest);
     }

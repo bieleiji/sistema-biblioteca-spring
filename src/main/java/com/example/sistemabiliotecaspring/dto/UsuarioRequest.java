@@ -1,10 +1,22 @@
 package com.example.sistemabiliotecaspring.dto;
 
 import com.example.sistemabiliotecaspring.model.Role;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 
 public class UsuarioRequest {
+    @NotNull
+    @NotBlank
     private String nome;
+
+    @NotNull
+    @NotBlank
     private String senha;
+
+    @NotNull
+    @NotBlank
+    @Email
     private String email;
 
     private Role role;
