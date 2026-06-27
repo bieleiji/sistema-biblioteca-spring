@@ -1,6 +1,5 @@
 package com.example.sistemabiliotecaspring.service;
 
-import com.example.sistemabiliotecaspring.exception.RecursoEmConflitoException;
 import com.example.sistemabiliotecaspring.exception.RecursoNaoAutorizadoException;
 import com.example.sistemabiliotecaspring.exception.RecursoNaoEncontradoException;
 import com.example.sistemabiliotecaspring.model.Role;
@@ -28,29 +27,21 @@ public class UsuariosService {
     @Autowired
     private TokenService tokenService;
 
-    private boolean ehEmailRepetido(String email) {
-        return (usuariosRepository.findByEmail(email) != null);
-    }
-
     public ResponseEntity<Object> salvarUsuario(UsuarioRequest usuarioRequest, Authentication authentication) {
-        String role = "";
         Usuario usuario = new Usuario();
 
         if(usuarioRequest.getRole() == null) usuarioRequest.setRole(Role.USUARIO);
 
         usuario.setSenha(passwordEncoder.encode(usuarioRequest.getSenha()));
         usuario.setNome(usuarioRequest.getNome());
+        usuario.setEmail(usuarioRequest.getEmail());
 
-        if(ehEmailRepetido(usuarioRequest.getEmail()))
-            throw new RecursoEmConflitoException("este email já está sendo utilizado");
-        else usuario.setEmail(usuarioRequest.getEmail());
-
-        if(authentication.isAuthenticated())
-             role = authentication.getAuthorities().toString();
-
-        if (role.contains("ROLE_ADMIN") || (!usuarioRequest.getRole().equals(Role.ADMIN)))
+    if(authentication != null) {
+        if (authentication.getAuthorities().toString().contains("ROLE_ADMIN") ||
+                !usuarioRequest.getRole().equals(Role.ADMIN))
             usuario.setRole(usuarioRequest.getRole());
         else throw new RecursoNaoAutorizadoException("Apenas ADMINs podem definir outros ADMINs");
+    }
 
         return ResponseEntity.status(HttpStatus.OK).body(usuariosRepository.save(usuario));
     }
@@ -77,19 +68,9 @@ public class UsuariosService {
         if(usuario == null)
             throw new RecursoNaoEncontradoException("usuario não encontrado");
 
-        if(usuarioRequest.getNome() != null)
-            if(!usuarioRequest.getNome().isBlank())
-                usuario.setNome(usuarioRequest.getNome());
-
-        if(usuarioRequest.getSenha() != null)
-            if(!usuarioRequest.getSenha().isBlank())
-                usuario.setSenha(passwordEncoder.encode(usuarioRequest.getSenha()));
-
-        if(usuarioRequest.getEmail() != null)
-            if(!usuarioRequest.getEmail().isBlank())
-                if(!ehEmailRepetido(usuarioRequest.getEmail()))
-                    usuario.setEmail(usuarioRequest.getEmail());
-                else throw new RecursoEmConflitoException("este email já está sendo utilizado");
+        usuario.setNome(usuarioRequest.getNome());
+        usuario.setSenha(passwordEncoder.encode(usuarioRequest.getSenha()));
+        usuario.setEmail(usuarioRequest.getEmail());
 
         if(authentication.isAuthenticated())
             role = authentication.getAuthorities().toString();

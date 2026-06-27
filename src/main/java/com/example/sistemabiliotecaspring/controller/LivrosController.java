@@ -5,6 +5,7 @@ import com.example.sistemabiliotecaspring.dto.LivroRequest;
 import com.example.sistemabiliotecaspring.service.LivrosService;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 
@@ -28,26 +29,23 @@ public class LivrosController {
 
     @PostMapping
     public ResponseEntity<Livro> salvarLivro(
-            @RequestHeader("Authorization") String authHeader,
+            Authentication authentication,
             @RequestBody LivroRequest livroRequest){
-        String token = authHeader.replace("Bearer ", "");
-        return livrosService.salvarLivro(livroRequest, token);
+        return livrosService.salvarLivro(livroRequest, authentication);
     }
 
     @PatchMapping("/{id}")
     public ResponseEntity<Livro> atualizarLivro(
-            @RequestHeader("Authorization") String authHeader,
+            Authentication authentication,
             @PathVariable long id,
             @RequestBody LivroRequest livroRequest){
-        String token = authHeader.replace("Bearer ", "");
-        return livrosService.atualizarLivro(id, livroRequest, token);
+        return livrosService.atualizarLivro(id, livroRequest, authentication);
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<String> deletarLivro(
-            @RequestHeader("Authorization") String authHeader,
+            Authentication authentication,
             @PathVariable long id){
-        String token = authHeader.replace("Bearer ", "");
-        return livrosService.deletarLivro(id, token);
+        return livrosService.deletarLivro(id, authentication);
     }
 }

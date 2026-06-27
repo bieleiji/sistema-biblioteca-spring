@@ -2,7 +2,6 @@ package com.example.sistemabiliotecaspring.service;
 
 import com.example.sistemabiliotecaspring.dto.EmprestimoRequest;
 import com.example.sistemabiliotecaspring.exception.RecursoEmConflitoException;
-import com.example.sistemabiliotecaspring.exception.RecursoNaoAutenticadoException;
 import com.example.sistemabiliotecaspring.exception.RecursoNaoEncontradoException;
 import com.example.sistemabiliotecaspring.model.Emprestimo;
 import com.example.sistemabiliotecaspring.model.Livro;
@@ -32,27 +31,16 @@ public class EmprestimosService {
     @Autowired
     private UsuariosRepository usuariosRepository;
 
-    @Autowired
-    private TokenService tokenService;
-
     public ResponseEntity<Object> emprestarLivro(Authentication authentication, EmprestimoRequest emprestimoRequest) {
         String email = authentication.getName();
 
         Usuario usuario = usuariosRepository.findByEmail(email);
         Livro livro = livrosRepository.getLivroById(emprestimoRequest.getId_livro());
 
-        if (usuario == null || livro == null || livro.isEmprestado()) {
-            if(usuario == null)
-                throw new RecursoNaoEncontradoException("usuario não encontrado");
+        if (livro.isEmprestado())
+            throw new RecursoEmConflitoException("livro já foi emprestado");
 
-            else if(livro == null)
-                throw new RecursoNaoEncontradoException("livro não encontrado");
-
-            else if(livro.isEmprestado())
-                throw new RecursoEmConflitoException("livro já foi emprestado");
-
-            else return null;
-        } else {
+        else {
             Emprestimo emprestimo = new Emprestimo();
             emprestimo.setUsuario(usuario);
             emprestimo.setLivro(livro);

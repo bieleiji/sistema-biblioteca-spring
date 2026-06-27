@@ -1,11 +1,6 @@
 package com.example.sistemabiliotecaspring.dto;
 
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
-
 public class LivroRequest {
-    @NotNull
-    @NotBlank
     private String nome;
     private boolean eh_emprestado;
 

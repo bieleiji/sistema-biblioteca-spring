@@ -1,6 +1,8 @@
 package com.example.sistemabiliotecaspring.model;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import org.springframework.stereotype.Component;
 
 @Entity(name = "usuarios")
@@ -10,10 +12,17 @@ public class Usuario {
     @Column(name = "id_usuario")
     private Long id;
 
+    @NotNull
+    @NotBlank
     private String nome;
 
+    @NotNull
+    @NotBlank
     @Column(unique = true)
     private String email;
+
+    @NotNull
+    @NotBlank
     private String senha;
 
     @Enumerated(EnumType.STRING)
