@@ -1,6 +1,5 @@
 package com.example.sistemabiliotecaspring.dto;
 
-
 import java.time.LocalDate;
 
 public class EmprestimoRequest {
