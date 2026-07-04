@@ -34,8 +34,11 @@ public class EmprestimosService {
     public ResponseEntity<Object> emprestarLivro(Authentication authentication, EmprestimoRequest emprestimoRequest) {
         String email = authentication.getName();
 
-        Usuario usuario = usuariosRepository.findByEmail(email);
-        Livro livro = livrosRepository.getLivroById(emprestimoRequest.getId_livro());
+        Usuario usuario = usuariosRepository.findByEmail(email)
+                .orElseThrow(() -> new RecursoNaoEncontradoException("usuario não encontrado"));
+
+        Livro livro = livrosRepository.findById(emprestimoRequest.getId_livro())
+                .orElseThrow(() -> new RecursoNaoEncontradoException("livro não encontrado"));
 
         if (livro.isEmprestado())
             throw new RecursoEmConflitoException("livro já foi emprestado");
@@ -51,43 +54,33 @@ public class EmprestimosService {
         }
     }
 
-    public ResponseEntity<Object> devolverLivro(Authentication authentication, EmprestimoRequest emprestimoRequest) {
+        public ResponseEntity<Object> devolverLivro(Authentication authentication, EmprestimoRequest emprestimoRequest) {
         String email = authentication.getName();
 
-        Usuario usuario = usuariosRepository.findByEmail(email);
-        Livro livro = livrosRepository.getLivroById(emprestimoRequest.getId_livro());
+        Usuario usuario = usuariosRepository.findByEmail(email)
+                .orElseThrow(() -> new RecursoNaoEncontradoException("usuario não encontrado"));
 
-        if (usuario == null || livro == null) {
-            if(usuario == null)
-                throw new RecursoNaoEncontradoException("usuario não encontrado");
+        Livro livro = livrosRepository.findById(emprestimoRequest.getId_livro())
+                .orElseThrow(() -> new RecursoNaoEncontradoException("livro não encontrado"));
 
-            else throw new RecursoNaoEncontradoException("livro não encontrado");
-        } else {
-            Emprestimo emprestimo = emprestimosRepository.findEmprestimoByUsuarioAndLivroAndDevolvidoIsFalse(usuario,livro);
-            if (emprestimo == null || emprestimo.isDevolvido()) {
-                if (emprestimo != null) {
-                    if(emprestimo.isDevolvido()) {
-                        throw new RecursoEmConflitoException("livro já foi devolvido");
-                    }
-                } else {
-                    throw new RecursoNaoEncontradoException("emprestimo não encontrado");
-                }
-            } else {
-                emprestimo.setDate_devolucao(LocalDate.now());
-                emprestimo.setDevolvido(true);
-                livro.setEmprestado(false);
-                return ResponseEntity.status(HttpStatus.OK).body(emprestimosRepository.save(emprestimo));
-            }
+        Emprestimo emprestimo = emprestimosRepository.findEmprestimoByUsuarioAndLivroAndDevolvidoIsFalse(usuario,livro)
+                .orElseThrow(() -> new RecursoNaoEncontradoException("emprestimo não encontrado"));
+
+        if(emprestimo.isDevolvido())
+            throw new RecursoEmConflitoException("livro já foi devolvido");
+
+        else {
+            emprestimo.setDate_devolucao(LocalDate.now());
+            emprestimo.setDevolvido(true);
+            livro.setEmprestado(false);
+            return ResponseEntity.status(HttpStatus.OK).body(emprestimosRepository.save(emprestimo));
         }
 
-        return null;
     }
 
     public ResponseEntity<Page<Emprestimo>> mostrarEmprestimosUsuario(Authentication authentication, int page, int size, Boolean devolvido) {
-        Usuario usuario = usuariosRepository.findByEmail(authentication.getName());
-
-        if(usuario == null)
-            throw new RecursoNaoEncontradoException("usuário não encontrado");
+        Usuario usuario = usuariosRepository.findByEmail(authentication.getName())
+                .orElseThrow(() -> new RecursoNaoEncontradoException("usuário não encontrado"));
 
         Pageable pageable = PageRequest.of(page, size);
         Page<Emprestimo> pagina;

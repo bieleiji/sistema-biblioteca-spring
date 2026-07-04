@@ -7,9 +7,10 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
+import java.util.Optional;
+
 @Repository
 public interface LivrosRepository extends JpaRepository<Livro, Long> {
-    Livro getLivroById(Long id);
     @NullMarked Page<Livro> findAll(Pageable pageable);
     Page<Livro> findByNomeContainingIgnoreCase(String nome, Pageable pageable);
     Page<Livro> findByEmprestado(boolean emprestado, Pageable pageable);

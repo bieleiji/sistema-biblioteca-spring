@@ -51,10 +51,8 @@ public class LivrosService {
             throw new RecursoNaoAutorizadoException("Apenas ADMINs podem alterar livros no repositório");
 
 
-        Livro livroAtualizado = livrosRepository.findById(id).orElse(null);
-
-        if(livroAtualizado == null)
-            throw new RecursoNaoEncontradoException("livro não encontrado");
+        Livro livroAtualizado = livrosRepository.findById(id)
+                .orElseThrow(() -> new RecursoNaoEncontradoException("livro não encontrado"));
 
         livroAtualizado.setNome(livroRequest.getNome());
 

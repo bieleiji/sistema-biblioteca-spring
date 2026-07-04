@@ -31,7 +31,7 @@ public class UsuariosService {
     private TokenService tokenService;
 
     private boolean ehEmailRepetido(String email) {
-        return (usuariosRepository.findByEmail(email) != null);
+        return (usuariosRepository.findByEmail(email).isPresent());
     }
 
     public ResponseEntity<Object> salvarUsuario(SalvarUsuarioRequest salvarUsuarioRequest, Authentication authentication) {
@@ -57,9 +57,9 @@ public class UsuariosService {
     }
 
     public ResponseEntity<String> logar(LogarUsuarioRequest logarUsuarioRequest) {
-        Usuario usuario = usuariosRepository.findByEmail(logarUsuarioRequest.getEmail());
+        Usuario usuario = usuariosRepository.findByEmail(logarUsuarioRequest.getEmail())
+                .orElseThrow(() -> new RecursoNaoEncontradoException("Usuário não encontrado"));
 
-        if(usuario == null) throw new RecursoNaoEncontradoException("Usuário não encontrado");
         if(!passwordEncoder.matches(logarUsuarioRequest.getSenha(), usuario.getSenha()))
             throw new RecursoNaoAutorizadoException("Senha incorreta");
 
@@ -78,10 +78,8 @@ public class UsuariosService {
     public ResponseEntity<String> atualizarUsuario(Authentication authentication,
                                                    AtualizarUsuarioRequest atualizarUsuarioRequest) {
         String role = authentication.getAuthorities().toString();
-        Usuario usuario = usuariosRepository.findByEmail(authentication.getName());
-
-        if (usuario == null)
-            throw new RecursoNaoEncontradoException("usuario não encontrado");
+        Usuario usuario = usuariosRepository.findByEmail(authentication.getName())
+                .orElseThrow(() -> new RecursoNaoEncontradoException("usuario não encontrado"));
 
         if(authentication.isAuthenticated())
             role = authentication.getAuthorities().toString();
@@ -108,10 +106,8 @@ public class UsuariosService {
     }
 
     public ResponseEntity<String> excluirUsuario(Authentication authentication) {
-        Usuario usuario = usuariosRepository.findByEmail(authentication.getName());
-
-        if(usuario == null)
-            throw new RecursoNaoEncontradoException("Usuario não encontrado");
+        Usuario usuario = usuariosRepository.findByEmail(authentication.getName())
+                .orElseThrow(()-> new RecursoNaoEncontradoException("Usuario não encontrado"));
 
         usuariosRepository.delete(usuario);
         return ResponseEntity.status(HttpStatus.OK).body("Usuario excluído com êxito!");
