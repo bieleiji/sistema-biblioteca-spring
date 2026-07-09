@@ -66,8 +66,11 @@ public class LivrosService {
         if(!authentication.getAuthorities().toString().contains("ROLE_ADMIN"))
             throw new RecursoNaoAutorizadoException("Apenas ADMINs podem deletar livros no repositório");
 
-        if(livrosRepository.existsById(id))
+        if(!livrosRepository.existsById(id))
+            throw new RecursoNaoEncontradoException("livro não encontrado");
+        else
             livrosRepository.deleteById(id);
+
         return ResponseEntity.status(HttpStatus.OK).body("Livro deletado com sucesso");
     }
 }
