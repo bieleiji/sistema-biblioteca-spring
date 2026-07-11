@@ -3,6 +3,7 @@ package com.example.sistemabiliotecaspring.service;
 import com.example.sistemabiliotecaspring.dto.usuarioDTO.AtualizarUsuarioRequest;
 import com.example.sistemabiliotecaspring.dto.usuarioDTO.LogarUsuarioRequest;
 import com.example.sistemabiliotecaspring.exception.RecursoEmConflitoException;
+import com.example.sistemabiliotecaspring.exception.RecursoNaoAutenticadoException;
 import com.example.sistemabiliotecaspring.exception.RecursoNaoAutorizadoException;
 import com.example.sistemabiliotecaspring.exception.RecursoNaoEncontradoException;
 import com.example.sistemabiliotecaspring.model.Role;
@@ -47,13 +48,13 @@ public class UsuariosService {
         else usuario.setEmail(salvarUsuarioRequest.getEmail());
 
         if(authentication != null) {
-        if (authentication.getAuthorities().toString().contains("ROLE_ADMIN") ||
-                !salvarUsuarioRequest.getRole().equals(Role.ADMIN))
-            usuario.setRole(salvarUsuarioRequest.getRole());
-        else throw new RecursoNaoAutorizadoException("Apenas ADMINs podem definir outros ADMINs");
-    }
+            if (authentication.getAuthorities().toString().contains("ROLE_ADMIN") ||
+                    !salvarUsuarioRequest.getRole().equals(Role.ADMIN))
+                usuario.setRole(salvarUsuarioRequest.getRole());
+            else throw new RecursoNaoAutorizadoException("Apenas ADMINs podem definir outros ADMINs");
+        }
 
-        return ResponseEntity.status(HttpStatus.OK).body(usuariosRepository.save(usuario));
+        return ResponseEntity.status(HttpStatus.CREATED).body(usuariosRepository.save(usuario));
     }
 
     public ResponseEntity<String> logar(LogarUsuarioRequest logarUsuarioRequest) {
@@ -61,7 +62,7 @@ public class UsuariosService {
                 .orElseThrow(() -> new RecursoNaoEncontradoException("Usuário não encontrado"));
 
         if(!passwordEncoder.matches(logarUsuarioRequest.getSenha(), usuario.getSenha()))
-            throw new RecursoNaoAutorizadoException("Senha incorreta");
+            throw new RecursoNaoAutenticadoException("Senha incorreta");
 
         return ResponseEntity.status(HttpStatus.OK).body(tokenService.gerarToken(usuario));
     }
