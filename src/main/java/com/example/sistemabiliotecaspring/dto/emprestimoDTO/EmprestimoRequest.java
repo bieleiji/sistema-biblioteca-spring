@@ -9,6 +9,10 @@ public class EmprestimoRequest {
     private LocalDate date_devolucao;
     private boolean devolvido;
 
+    public EmprestimoRequest(Long id_livro) {
+        this.id_livro = id_livro;
+    }
+
     public Long getId_livro() {
         return id_livro;
     }
