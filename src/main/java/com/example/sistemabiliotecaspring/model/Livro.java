@@ -2,6 +2,8 @@ package com.example.sistemabiliotecaspring.model;
 
 import jakarta.persistence.*;
 
+import java.util.Objects;
+
 @Entity(name = "livros")
 public class Livro {
     @Id
@@ -15,6 +17,12 @@ public class Livro {
     private boolean emprestado;
 
     public Livro() {}
+
+    public Livro(Long id, String nome, boolean emprestado) {
+        this.id = id;
+        this.nome = nome;
+        this.emprestado = emprestado;
+    }
 
     public Long getId() {
         return id;
@@ -38,5 +46,17 @@ public class Livro {
 
     public void setEmprestado(boolean emprestado) {
         this.emprestado = emprestado;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (o == null || getClass() != o.getClass()) return false;
+        Livro livro = (Livro) o;
+        return emprestado == livro.emprestado && Objects.equals(id, livro.id) && Objects.equals(nome, livro.nome);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, nome, emprestado);
     }
 }

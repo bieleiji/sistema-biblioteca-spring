@@ -2,6 +2,8 @@ package com.example.sistemabiliotecaspring.model;
 
 import jakarta.persistence.*;
 
+import java.util.Objects;
+
 @Entity(name = "usuarios")
 public class Usuario {
     @Id
@@ -18,6 +20,13 @@ public class Usuario {
 
     @Enumerated(EnumType.STRING)
     private Role role = Role.USUARIO;
+
+    public Usuario() {}
+
+    public Usuario(String email, String nome) {
+        this.email = email;
+        this.nome = nome;
+    }
 
     public Long getId() {
         return id;
@@ -67,5 +76,17 @@ public class Usuario {
                 ", senha='" + senha + '\'' +
                 ", role=" + role +
                 '}';
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (o == null || getClass() != o.getClass()) return false;
+        Usuario usuario = (Usuario) o;
+        return Objects.equals(id, usuario.id) && Objects.equals(nome, usuario.nome) && Objects.equals(email, usuario.email) && Objects.equals(senha, usuario.senha) && role == usuario.role;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, nome, email, senha, role);
     }
 }

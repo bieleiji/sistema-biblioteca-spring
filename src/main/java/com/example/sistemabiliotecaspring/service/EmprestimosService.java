@@ -44,12 +44,8 @@ public class EmprestimosService {
             throw new RecursoEmConflitoException("livro já foi emprestado");
 
         else {
-            Emprestimo emprestimo = new Emprestimo();
-            emprestimo.setUsuario(usuario);
-            emprestimo.setLivro(livro);
+            Emprestimo emprestimo = new Emprestimo(usuario, livro, LocalDate.now(), false);
             livro.setEmprestado(true);
-            emprestimo.setData_emprestimo(LocalDate.now());
-            emprestimo.setDevolvido(false);
             return ResponseEntity.status(HttpStatus.CREATED).body(emprestimosRepository.save(emprestimo));
         }
     }

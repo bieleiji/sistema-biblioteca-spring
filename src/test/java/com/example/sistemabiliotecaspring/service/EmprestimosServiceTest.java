@@ -2,6 +2,9 @@ package com.example.sistemabiliotecaspring.service;
 
 import com.example.sistemabiliotecaspring.dto.emprestimoDTO.EmprestimoRequest;
 import com.example.sistemabiliotecaspring.exception.RecursoNaoEncontradoException;
+import com.example.sistemabiliotecaspring.model.Emprestimo;
+import com.example.sistemabiliotecaspring.model.Livro;
+import com.example.sistemabiliotecaspring.model.Usuario;
 import com.example.sistemabiliotecaspring.repository.EmprestimosRepository;
 import com.example.sistemabiliotecaspring.repository.LivrosRepository;
 import com.example.sistemabiliotecaspring.repository.UsuariosRepository;
@@ -12,6 +15,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.core.Authentication;
 
+import java.time.LocalDate;
 import java.util.Optional;
 
 import static org.mockito.Mockito.*;
@@ -31,6 +35,8 @@ public class EmprestimosServiceTest {
     @InjectMocks
     private EmprestimosService emprestimosService;
 
+    // emprestarLivro()
+
     @Test
     public void emprestarLivroTestUsuarioNaoEncontrado() {
         Authentication authentication = mock(Authentication.class);
@@ -44,6 +50,21 @@ public class EmprestimosServiceTest {
                 () -> emprestimosService.emprestarLivro(authentication, emprestimoRequest));
     }
 
+    @Test
+    public void emprestarLivroSemErros() {
+        Authentication authentication = mock(Authentication.class);
+        EmprestimoRequest emprestimoRequest = new EmprestimoRequest(2L);
+        String emailValido = "example@gmail.com";
+        Usuario usuario = new Usuario(emailValido, "NomeTeste");
+        Livro livro = new Livro(emprestimoRequest.getId_livro(), "LivroTeste", false);
 
+        when(authentication.getName()).thenReturn(emailValido);
+        when(usuariosRepository.findByEmail(emailValido)).thenReturn(Optional.of(usuario));
+        when(livrosRepository.findById(emprestimoRequest.getId_livro())).thenReturn(Optional.of(livro));
+
+        emprestimosService.emprestarLivro(authentication,emprestimoRequest);
+
+        verify(emprestimosRepository).save(new Emprestimo(usuario, livro, LocalDate.now(), false));
+    }
 
 }

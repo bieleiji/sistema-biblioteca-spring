@@ -3,6 +3,7 @@ package com.example.sistemabiliotecaspring.model;
 import jakarta.persistence.*;
 
 import java.time.LocalDate;
+import java.util.Objects;
 
 @Entity(name = "emprestimos")
 public class Emprestimo {
@@ -22,6 +23,16 @@ public class Emprestimo {
     private LocalDate data_emprestimo;
     private LocalDate date_devolucao;
     private boolean devolvido;
+
+
+    public Emprestimo() {}
+
+    public Emprestimo(Usuario usuario, Livro livro, LocalDate data_emprestimo, boolean devolvido) {
+        this.usuario = usuario;
+        this.livro = livro;
+        this.data_emprestimo = data_emprestimo;
+        this.devolvido = devolvido;
+    }
 
     public Long getId() {
         return id;
@@ -69,5 +80,18 @@ public class Emprestimo {
 
     public void setDevolvido(boolean devolvido) {
         this.devolvido = devolvido;
+    }
+
+
+    @Override
+    public boolean equals(Object o) {
+        if (o == null || getClass() != o.getClass()) return false;
+        Emprestimo that = (Emprestimo) o;
+        return devolvido == that.devolvido && Objects.equals(id, that.id) && Objects.equals(usuario, that.usuario) && Objects.equals(livro, that.livro) && Objects.equals(data_emprestimo, that.data_emprestimo) && Objects.equals(date_devolucao, that.date_devolucao);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, usuario, livro, data_emprestimo, date_devolucao, devolvido);
     }
 }
