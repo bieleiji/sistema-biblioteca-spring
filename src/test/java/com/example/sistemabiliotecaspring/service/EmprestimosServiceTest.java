@@ -1,6 +1,7 @@
 package com.example.sistemabiliotecaspring.service;
 
 import com.example.sistemabiliotecaspring.dto.emprestimoDTO.EmprestimoRequest;
+import com.example.sistemabiliotecaspring.exception.RecursoEmConflitoException;
 import com.example.sistemabiliotecaspring.exception.RecursoNaoEncontradoException;
 import com.example.sistemabiliotecaspring.model.Emprestimo;
 import com.example.sistemabiliotecaspring.model.Livro;
@@ -48,6 +49,38 @@ public class EmprestimosServiceTest {
 
         assertThrows(RecursoNaoEncontradoException.class,
                 () -> emprestimosService.emprestarLivro(authentication, emprestimoRequest));
+    }
+
+    @Test
+    public void emprestarLivroTestLivroNaoEncontrado() {
+        Authentication authentication = mock(Authentication.class);
+        EmprestimoRequest emprestimoRequest = new EmprestimoRequest(-1L);
+        String emailValido = "example@gmail.com";
+        Usuario usuario = new Usuario(emailValido, "NomeTeste");
+
+        when(authentication.getName()).thenReturn(emailValido);
+        when(usuariosRepository.findByEmail(emailValido)).thenReturn(Optional.of(usuario));
+        when(livrosRepository.findById(emprestimoRequest.getId_livro())).thenReturn(Optional.empty());
+
+
+        assertThrows(RecursoNaoEncontradoException.class,
+                () -> emprestimosService.emprestarLivro(authentication,emprestimoRequest));
+    }
+
+    @Test
+    public void emprestarLivroTestLivroJaEmprestado() {
+        Authentication authentication = mock(Authentication.class);
+        EmprestimoRequest emprestimoRequest = new EmprestimoRequest(2L);
+        String emailValido = "example@gmail.com";
+        Usuario usuario = new Usuario(emailValido, "NomeTeste");
+        Livro livro = new Livro(emprestimoRequest.getId_livro(), "LivroTeste", true);
+
+        when(authentication.getName()).thenReturn(emailValido);
+        when(usuariosRepository.findByEmail(emailValido)).thenReturn(Optional.of(usuario));
+        when(livrosRepository.findById(emprestimoRequest.getId_livro())).thenReturn(Optional.of(livro));
+
+        assertThrows(RecursoEmConflitoException.class,
+                () -> emprestimosService.emprestarLivro(authentication,emprestimoRequest));
     }
 
     @Test
