@@ -100,4 +100,75 @@ public class EmprestimosServiceTest {
         verify(emprestimosRepository).save(new Emprestimo(usuario, livro, LocalDate.now(), false));
     }
 
+
+    // devolverLivro()
+    @Test
+    public void devolverLivroTestUsuarioNaoEncontrado() {
+        Authentication authentication = mock(Authentication.class);
+        EmprestimoRequest emprestimoRequest = new EmprestimoRequest(2L);
+        String emailInvalido = "example@gmail.com";
+
+        when(authentication.getName()).thenReturn(emailInvalido);
+        when(usuariosRepository.findByEmail(emailInvalido)).thenReturn(Optional.empty());
+
+        assertThrows(RecursoNaoEncontradoException.class,
+                () -> emprestimosService.devolverLivro(authentication,emprestimoRequest));
+    }
+
+    @Test
+    public void devolverLivroTestLivroNaoEncontrado() {
+        Authentication authentication = mock(Authentication.class);
+        EmprestimoRequest emprestimoRequest = new EmprestimoRequest(2L);
+        String emailValido = "example@gmail.com";
+        Usuario usuario = new Usuario(emailValido, "NomeTeste");
+
+        when(authentication.getName()).thenReturn(emailValido);
+        when(usuariosRepository.findByEmail(emailValido)).thenReturn(Optional.of(usuario));
+        when(livrosRepository.findById(emprestimoRequest.getId_livro())).thenReturn(Optional.empty());
+
+        assertThrows(RecursoNaoEncontradoException.class,
+                () -> emprestimosService.devolverLivro(authentication, emprestimoRequest));
+    }
+
+    @Test
+    public void devolverLivroTestEmprestimoNaoEncontrado() {
+        Authentication authentication = mock(Authentication.class);
+        EmprestimoRequest emprestimoRequest = new EmprestimoRequest(2L);
+        String emailValido = "example@gmail.com";
+        Usuario usuario = new Usuario(emailValido, "NomeTeste");
+        Livro livro = new Livro(emprestimoRequest.getId_livro(), "LivroTeste", true);
+
+        when(authentication.getName()).thenReturn(emailValido);
+        when(usuariosRepository.findByEmail(emailValido)).thenReturn(Optional.of(usuario));
+        when(livrosRepository.findById(emprestimoRequest.getId_livro())).thenReturn(Optional.of(livro));
+        when(emprestimosRepository.findEmprestimoByUsuarioAndLivroAndDevolvidoIsFalse(usuario,livro))
+                .thenReturn(Optional.empty());
+
+        assertThrows(RecursoNaoEncontradoException.class,
+                () -> emprestimosService.devolverLivro(authentication, emprestimoRequest));
+    }
+
+    @Test
+    public void devolverLivroSemErros() {
+        Authentication authentication = mock(Authentication.class);
+        EmprestimoRequest emprestimoRequest = new EmprestimoRequest(2L);
+        String emailValido = "example@gmail.com";
+        Usuario usuario = new Usuario(emailValido, "NomeTeste");
+        Livro livro = new Livro(emprestimoRequest.getId_livro(), "LivroTeste", true);
+        Emprestimo emprestimo = new Emprestimo(usuario, livro, LocalDate.now(), false);
+
+        when(authentication.getName()).thenReturn(emailValido);
+        when(usuariosRepository.findByEmail(emailValido)).thenReturn(Optional.of(usuario));
+        when(livrosRepository.findById(emprestimoRequest.getId_livro())).thenReturn(Optional.of(livro));
+        when(emprestimosRepository.findEmprestimoByUsuarioAndLivroAndDevolvidoIsFalse(usuario,livro))
+                .thenReturn(Optional.of(emprestimo));
+
+        emprestimosService.devolverLivro(authentication, emprestimoRequest);
+
+        verify(emprestimosRepository).save(emprestimo);
+
+        assertTrue(emprestimo.isDevolvido());
+        assertEquals(LocalDate.now(), emprestimo.getDate_devolucao());
+        assertFalse(livro.isEmprestado());
+    }
 }

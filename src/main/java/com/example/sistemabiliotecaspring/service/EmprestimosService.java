@@ -59,18 +59,15 @@ public class EmprestimosService {
         Livro livro = livrosRepository.findById(emprestimoRequest.getId_livro())
                 .orElseThrow(() -> new RecursoNaoEncontradoException("livro não encontrado"));
 
-        Emprestimo emprestimo = emprestimosRepository.findEmprestimoByUsuarioAndLivroAndDevolvidoIsFalse(usuario,livro)
+        Emprestimo emprestimo = emprestimosRepository
+                .findEmprestimoByUsuarioAndLivroAndDevolvidoIsFalse(usuario,livro)
                 .orElseThrow(() -> new RecursoNaoEncontradoException("emprestimo não encontrado"));
 
-        if(emprestimo.isDevolvido())
-            throw new RecursoEmConflitoException("livro já foi devolvido");
+        emprestimo.setDate_devolucao(LocalDate.now());
+        emprestimo.setDevolvido(true);
+        livro.setEmprestado(false);
+        return ResponseEntity.status(HttpStatus.OK).body(emprestimosRepository.save(emprestimo));
 
-        else {
-            emprestimo.setDate_devolucao(LocalDate.now());
-            emprestimo.setDevolvido(true);
-            livro.setEmprestado(false);
-            return ResponseEntity.status(HttpStatus.OK).body(emprestimosRepository.save(emprestimo));
-        }
 
     }
 
