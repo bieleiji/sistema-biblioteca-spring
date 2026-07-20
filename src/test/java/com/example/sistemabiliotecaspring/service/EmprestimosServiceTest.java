@@ -14,6 +14,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.security.core.Authentication;
 
 import java.time.LocalDate;
@@ -170,5 +171,70 @@ public class EmprestimosServiceTest {
         assertTrue(emprestimo.isDevolvido());
         assertEquals(LocalDate.now(), emprestimo.getDate_devolucao());
         assertFalse(livro.isEmprestado());
+    }
+
+
+    // mostrarEmprestimosUsuario()
+
+    @Test
+    public void mostrarEmprestimosUsuarioTestUsuarioNaoEncontrado() {
+        Authentication authentication = mock(Authentication.class);
+        String emailInvalido = "emailinvalido@gmail.com";
+        int page = 0, size = 10;
+        Boolean devolvido = null;
+
+        when(authentication.getName()).thenReturn(emailInvalido);
+        when(usuariosRepository.findByEmail(emailInvalido)).thenReturn(Optional.empty());
+
+        assertThrows(RecursoNaoEncontradoException.class,
+                () -> emprestimosService.mostrarEmprestimosUsuario(authentication, page, size, devolvido));
+    }
+
+    @Test
+    public void mostrarEmprestimosUsuarioTestSemFiltro() {
+        Authentication authentication = mock(Authentication.class);
+        Usuario usuario = mock(Usuario.class);
+        String emailValido = "emailinvalido@gmail.com";
+        int page = 0, size = 10;
+        Boolean devolvido = null;
+
+        when(authentication.getName()).thenReturn(emailValido);
+        when(usuariosRepository.findByEmail(emailValido)).thenReturn(Optional.of(usuario));
+
+        emprestimosService.mostrarEmprestimosUsuario(authentication, page, size, devolvido);
+
+        verify(emprestimosRepository).findEmprestimosByUsuario(usuario,PageRequest.of(page, size));
+    }
+
+    @Test
+    public void mostrarEmprestimosUsuarioTestFiltroEmprestimosPendentes() {
+        Authentication authentication = mock(Authentication.class);
+        Usuario usuario = mock(Usuario.class);
+        String emailValido = "emailinvalido@gmail.com";
+        int page = 0, size = 10;
+        boolean devolvido = false;
+
+        when(authentication.getName()).thenReturn(emailValido);
+        when(usuariosRepository.findByEmail(emailValido)).thenReturn(Optional.of(usuario));
+
+        emprestimosService.mostrarEmprestimosUsuario(authentication, page, size, devolvido);
+
+        verify(emprestimosRepository).findEmprestimosByUsuarioAndDevolvido(usuario,devolvido,PageRequest.of(page,size));
+    }
+
+    @Test
+    public void mostrarEmprestimosUsuarioTestFiltroEmprestimosEmDia() {
+        Authentication authentication = mock(Authentication.class);
+        Usuario usuario = mock(Usuario.class);
+        String emailValido = "emailinvalido@gmail.com";
+        int page = 0, size = 10;
+        boolean devolvido = true;
+
+        when(authentication.getName()).thenReturn(emailValido);
+        when(usuariosRepository.findByEmail(emailValido)).thenReturn(Optional.of(usuario));
+
+        emprestimosService.mostrarEmprestimosUsuario(authentication, page, size, devolvido);
+
+        verify(emprestimosRepository).findEmprestimosByUsuarioAndDevolvido(usuario,devolvido,PageRequest.of(page,size));
     }
 }
