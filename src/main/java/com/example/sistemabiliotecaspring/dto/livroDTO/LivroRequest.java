@@ -10,6 +10,12 @@ public class LivroRequest {
 
     private boolean eh_emprestado;
 
+    public LivroRequest() {}
+
+    public LivroRequest(String nome) {
+        this.nome = nome;
+    }
+
     public String getNome() {
         return nome;
     }

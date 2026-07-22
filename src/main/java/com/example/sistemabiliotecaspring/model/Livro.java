@@ -14,9 +14,13 @@ public class Livro {
     private String nome;
 
     @Column(name = "eh_emprestado")
-    private boolean emprestado;
+    private boolean emprestado = false;
 
     public Livro() {}
+
+    public Livro(String nome) {
+        this.nome = nome;
+    }
 
     public Livro(Long id, String nome, boolean emprestado) {
         this.id = id;
