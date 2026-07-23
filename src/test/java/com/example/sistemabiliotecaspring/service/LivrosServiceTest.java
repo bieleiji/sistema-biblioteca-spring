@@ -35,7 +35,9 @@ public class LivrosServiceTest {
 
     private final String TITULO = "Senhor dos Aneis";
 
+    // =================================================================================================================
     // getLivros()
+    // =================================================================================================================
 
     @Test
     public void getLivrosTestSemFiltro() {
@@ -85,8 +87,9 @@ public class LivrosServiceTest {
     }
 
 
-
+    // =================================================================================================================
     // salvarLivro()
+    // =================================================================================================================
 
     @Test
     public void salvarLivroTestUsuarioNaoEhAdmin() {
@@ -114,8 +117,9 @@ public class LivrosServiceTest {
     }
 
 
-
+    // =================================================================================================================
     // atualizarLivro()
+    // =================================================================================================================
 
     @Test
     public void atualizarLivroTestUsuarioNaoEhAdmin() {
@@ -154,4 +158,45 @@ public class LivrosServiceTest {
 
         verify(livrosRepository).save(new Livro(ID, TITULO, false));
     }
+
+
+    // =================================================================================================================
+    // deletarLivro()
+    // =================================================================================================================
+
+    @Test
+    public void deletarLivroTestUsuarioNaoEhAdmin() {
+        Authentication authentication = mock(Authentication.class);
+
+        when(authentication.getAuthorities()).thenReturn(List.of());
+
+        assertThrows(RecursoNaoAutorizadoException.class,
+                () -> livrosService.deletarLivro(ID, authentication));
+
+    }
+
+    @Test
+    public void deletarLivroTestLivroNaoEncontrado() {
+        Authentication authentication = mock(Authentication.class);
+
+        when(authentication.getAuthorities()).thenAnswer(invocation -> List.of(new SimpleGrantedAuthority("ROLE_ADMIN")));
+        when(livrosRepository.existsById(ID)).thenReturn(false);
+
+        assertThrows(RecursoNaoEncontradoException.class,
+                () -> livrosService.deletarLivro(ID, authentication));
+
+    }
+
+    @Test
+    public void deletarLivroSucesso() {
+        Authentication authentication = mock(Authentication.class);
+
+        when(authentication.getAuthorities()).thenAnswer(invocation -> List.of(new SimpleGrantedAuthority("ROLE_ADMIN")));
+        when(livrosRepository.existsById(ID)).thenReturn(true);
+
+        livrosService.deletarLivro(ID, authentication);
+
+        verify(livrosRepository).deleteById(ID);
+    }
+
 }

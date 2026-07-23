@@ -37,7 +37,9 @@ public class EmprestimosServiceTest {
     @InjectMocks
     private EmprestimosService emprestimosService;
 
+    // =================================================================================================================
     // emprestarLivro()
+    // =================================================================================================================
 
     @Test
     public void emprestarLivroTestUsuarioNaoEncontrado() {
@@ -101,8 +103,10 @@ public class EmprestimosServiceTest {
         verify(emprestimosRepository).save(new Emprestimo(usuario, livro, LocalDate.now(), false));
     }
 
-
+    // =================================================================================================================
     // devolverLivro()
+    // =================================================================================================================
+
     @Test
     public void devolverLivroTestUsuarioNaoEncontrado() {
         Authentication authentication = mock(Authentication.class);
@@ -173,8 +177,9 @@ public class EmprestimosServiceTest {
         assertFalse(livro.isEmprestado());
     }
 
-
+    // =================================================================================================================
     // mostrarEmprestimosUsuario()
+    // =================================================================================================================
 
     @Test
     public void mostrarEmprestimosUsuarioTestUsuarioNaoEncontrado() {
