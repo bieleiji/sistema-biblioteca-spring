@@ -28,6 +28,13 @@ public class Usuario {
         this.nome = nome;
     }
 
+    public Usuario(String nome, String email, String senha, Role role) {
+        this.nome = nome;
+        this.email = email;
+        this.senha = senha;
+        this.role = role;
+    }
+
     public Long getId() {
         return id;
     }

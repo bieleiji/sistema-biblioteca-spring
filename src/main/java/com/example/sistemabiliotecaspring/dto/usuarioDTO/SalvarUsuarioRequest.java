@@ -21,6 +21,15 @@ public class SalvarUsuarioRequest {
 
     private Role role;
 
+    public SalvarUsuarioRequest() {}
+
+    public SalvarUsuarioRequest(String nome, String senha, String email, Role role) {
+        this.nome = nome;
+        this.senha = senha;
+        this.email = email;
+        this.role = role;
+    }
+
     public String getNome() {
         return nome;
     }
