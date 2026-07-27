@@ -1,8 +1,11 @@
 package com.example.sistemabiliotecaspring.service;
 
+import com.example.sistemabiliotecaspring.dto.usuarioDTO.LogarUsuarioRequest;
 import com.example.sistemabiliotecaspring.dto.usuarioDTO.SalvarUsuarioRequest;
 import com.example.sistemabiliotecaspring.exception.RecursoEmConflitoException;
+import com.example.sistemabiliotecaspring.exception.RecursoNaoAutenticadoException;
 import com.example.sistemabiliotecaspring.exception.RecursoNaoAutorizadoException;
+import com.example.sistemabiliotecaspring.exception.RecursoNaoEncontradoException;
 import com.example.sistemabiliotecaspring.model.Role;
 import com.example.sistemabiliotecaspring.model.Usuario;
 import com.example.sistemabiliotecaspring.repository.UsuariosRepository;
@@ -39,8 +42,9 @@ public class UsuariosServiceTest {
     private final String SENHA_CRIPTOGRAFADA = "senhaCriptografada";
     private final String EMAIL = "email@gmail.com";
     private final String NOME = "nome";
+    private final String TOKEN = "token";
 
-    private final Role ROLE = Role.ADMIN;
+    private final Role ROLE_ADMIN = Role.ADMIN;
 
     // =================================================================================================================
     // salvarUsuario()
@@ -91,6 +95,55 @@ public class UsuariosServiceTest {
 
         usuariosService.salvarUsuario(salvarUsuarioRequest, authentication);
 
-        verify(usuariosRepository).save(new Usuario(NOME, EMAIL, SENHA_CRIPTOGRAFADA,  ROLE));
+        verify(usuariosRepository).save(new Usuario(NOME, EMAIL, SENHA_CRIPTOGRAFADA,  ROLE_ADMIN));
+    }
+
+
+    // =================================================================================================================
+    // logar()
+    // =================================================================================================================
+
+
+    @Test
+    public void logarTestUsuarioNaoEncontrado() {
+        LogarUsuarioRequest logarUsuarioRequest = mock(LogarUsuarioRequest.class);
+
+        when(logarUsuarioRequest.getEmail()).thenReturn(EMAIL);
+        when(usuariosRepository.findByEmail(EMAIL)).thenReturn(Optional.empty());
+
+        assertThrows(RecursoNaoEncontradoException.class,
+                () -> usuariosService.logar(logarUsuarioRequest));
+    }
+
+    @Test
+    public void logarTestSenhaIncorreta() {
+        LogarUsuarioRequest logarUsuarioRequest = mock(LogarUsuarioRequest.class);
+        Usuario usuario = new Usuario(NOME, EMAIL,  SENHA_CRIPTOGRAFADA,  ROLE_ADMIN);
+
+        when(logarUsuarioRequest.getEmail()).thenReturn(EMAIL);
+        when(logarUsuarioRequest.getSenha()).thenReturn(SENHA);
+        when(usuariosRepository.findByEmail(EMAIL)).thenReturn(Optional.of(usuario));
+        when(passwordEncoder.matches(SENHA, usuario.getSenha())).thenReturn(false);
+
+        assertThrows(RecursoNaoAutenticadoException.class,
+                () -> usuariosService.logar(logarUsuarioRequest));
+    }
+
+    @Test
+    public void logarSucesso() {
+        LogarUsuarioRequest logarUsuarioRequest = mock(LogarUsuarioRequest.class);
+        Usuario usuario = new Usuario(NOME, EMAIL,  SENHA_CRIPTOGRAFADA,  ROLE_ADMIN);
+
+        when(logarUsuarioRequest.getEmail()).thenReturn(EMAIL);
+        when(logarUsuarioRequest.getSenha()).thenReturn(SENHA);
+        when(usuariosRepository.findByEmail(EMAIL)).thenReturn(Optional.of(usuario));
+        when(passwordEncoder.matches(SENHA, usuario.getSenha())).thenReturn(true);
+        when(tokenService.gerarToken(usuario)).thenReturn(TOKEN);
+
+        String token = usuariosService.logar(logarUsuarioRequest).getBody();
+
+        verify(tokenService).gerarToken(usuario);
+
+        assertEquals(TOKEN, token);
     }
 }
