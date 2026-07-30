@@ -78,12 +78,11 @@ public class UsuariosService {
 
     public ResponseEntity<String> atualizarUsuario(Authentication authentication,
                                                    AtualizarUsuarioRequest atualizarUsuarioRequest) {
-        String role = authentication.getAuthorities().toString();
+
         Usuario usuario = usuariosRepository.findByEmail(authentication.getName())
                 .orElseThrow(() -> new RecursoNaoEncontradoException("usuario não encontrado"));
 
-        if(authentication.isAuthenticated())
-            role = authentication.getAuthorities().toString();
+        String role = authentication.getAuthorities().toString();
 
         if(atualizarUsuarioRequest.getRole() != null)
             if (role.contains("ROLE_ADMIN") || (!atualizarUsuarioRequest.getRole().equals(Role.ADMIN)))

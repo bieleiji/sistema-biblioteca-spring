@@ -1,5 +1,6 @@
 package com.example.sistemabiliotecaspring.service;
 
+import com.example.sistemabiliotecaspring.dto.usuarioDTO.AtualizarUsuarioRequest;
 import com.example.sistemabiliotecaspring.dto.usuarioDTO.LogarUsuarioRequest;
 import com.example.sistemabiliotecaspring.dto.usuarioDTO.SalvarUsuarioRequest;
 import com.example.sistemabiliotecaspring.exception.RecursoEmConflitoException;
@@ -144,6 +145,79 @@ public class UsuariosServiceTest {
 
         verify(tokenService).gerarToken(usuario);
 
+        assertEquals(TOKEN, token);
+    }
+
+    // =================================================================================================================
+    // atualizarUsuario()
+    // =================================================================================================================
+
+
+    @Test
+    public void atualizarUsuarioTestUsuarioNaoEncontrado() {
+        Authentication authentication = mock(Authentication.class);
+        AtualizarUsuarioRequest atualizarUsuarioRequest = mock(AtualizarUsuarioRequest.class);
+
+        when(authentication.getName()).thenReturn(EMAIL);
+        when(usuariosRepository.findByEmail(EMAIL)).thenReturn(Optional.empty());
+
+        assertThrows(RecursoNaoEncontradoException.class,
+                () -> usuariosService.atualizarUsuario(authentication, atualizarUsuarioRequest));
+    }
+
+    @Test
+    public void atualizarUsuarioTestUsuarioNaoEhAdminEQuerDefinirUmAdmin() {
+        Authentication authentication = mock(Authentication.class);
+        AtualizarUsuarioRequest atualizarUsuarioRequest = mock(AtualizarUsuarioRequest.class);
+        Usuario usuario = new Usuario(NOME, EMAIL,  SENHA_CRIPTOGRAFADA,  ROLE_ADMIN);
+
+        when(authentication.getName()).thenReturn(EMAIL);
+        when(usuariosRepository.findByEmail(EMAIL)).thenReturn(Optional.of(usuario));
+        when(authentication.getAuthorities())
+                .thenAnswer(invocation ->
+                        List.of(new SimpleGrantedAuthority("ROLE_USUARIO")));
+        when(atualizarUsuarioRequest.getRole()).thenReturn(Role.ADMIN);
+
+        assertThrows(RecursoNaoAutorizadoException.class,
+                () -> usuariosService.atualizarUsuario(authentication, atualizarUsuarioRequest));
+    }
+
+    @Test
+    public void atualizarUsuarioSucesso() {
+        Authentication authentication = mock(Authentication.class);
+        AtualizarUsuarioRequest atualizarUsuarioRequest = mock(AtualizarUsuarioRequest.class);
+        Usuario usuario = new Usuario(NOME, EMAIL,  SENHA_CRIPTOGRAFADA,  ROLE_ADMIN);
+        String novoNome = "novoNome";
+        String  novoEmail = "novoEmail";
+        String novoSenha = "novoSenha";
+        String novoSenhaCriptografada = "novoSenhaCriptografada";
+        Usuario novoUsuario = new Usuario(novoNome, novoEmail, novoSenhaCriptografada, ROLE_ADMIN);
+
+        when(passwordEncoder.encode(novoSenha)).thenReturn(novoSenhaCriptografada);
+        when(authentication.getName()).thenReturn(EMAIL);
+        when(usuariosRepository.findByEmail(EMAIL)).thenReturn(Optional.of(usuario));
+        when(authentication.getAuthorities())
+                .thenAnswer(invocation ->
+                        List.of(new SimpleGrantedAuthority("ROLE_ADMIN")));
+        when(atualizarUsuarioRequest.getRole()).thenReturn(Role.ADMIN);
+        when(atualizarUsuarioRequest.getNome()).thenReturn(novoNome);
+        when(atualizarUsuarioRequest.getEmail()).thenReturn(novoEmail);
+        when(atualizarUsuarioRequest.getSenha()).thenReturn(novoSenha);
+        when(usuariosRepository.save(novoUsuario)).thenReturn(novoUsuario);
+        when(tokenService.gerarToken(novoUsuario)).thenReturn(TOKEN);
+
+        String mensagem = usuariosService
+                            .atualizarUsuario(authentication, atualizarUsuarioRequest)
+                            .getBody();
+
+        String mensagemToken = "\nnovo token:\n";
+
+        assertNotNull(mensagem);
+
+        String token = mensagem.substring(mensagem.indexOf(mensagemToken) + mensagemToken.length());
+
+        verify(usuariosRepository).save(novoUsuario);
+        verify(tokenService).gerarToken(novoUsuario);
         assertEquals(TOKEN, token);
     }
 }

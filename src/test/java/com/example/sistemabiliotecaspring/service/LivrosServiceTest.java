@@ -172,7 +172,6 @@ public class LivrosServiceTest {
 
         assertThrows(RecursoNaoAutorizadoException.class,
                 () -> livrosService.deletarLivro(ID, authentication));
-
     }
 
     @Test
