@@ -220,4 +220,34 @@ public class UsuariosServiceTest {
         verify(tokenService).gerarToken(novoUsuario);
         assertEquals(TOKEN, token);
     }
+
+    // =================================================================================================================
+    // excluirUsuario()
+    // =================================================================================================================
+
+
+    @Test
+    public void excluirUsuarioTestUsuarioNaoEncontrado() {
+        Authentication authentication = mock(Authentication.class);
+
+        when(authentication.getName()).thenReturn(EMAIL);
+        when(usuariosRepository.findByEmail(EMAIL)).thenReturn(Optional.empty());
+
+        assertThrows(RecursoNaoEncontradoException.class,
+                () -> usuariosService.excluirUsuario(authentication));
+    }
+
+    @Test
+    public void excluirUsuarioSucesso() {
+        Authentication authentication = mock(Authentication.class);
+        Usuario usuario = new Usuario(EMAIL, NOME);
+
+        when(authentication.getName()).thenReturn(EMAIL);
+        when(usuariosRepository.findByEmail(EMAIL)).thenReturn(Optional.of(usuario));
+
+        usuariosService.excluirUsuario(authentication);
+
+        verify(usuariosRepository).delete(usuario);
+    }
+
 }
