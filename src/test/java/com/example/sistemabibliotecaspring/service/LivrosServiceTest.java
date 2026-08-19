@@ -10,6 +10,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -86,6 +87,23 @@ public class LivrosServiceTest {
         verify(livrosRepository).findByNomeContainingIgnoreCaseAndEmprestado(TITULO,ehEmprestado,PageRequest.of(PAGE, SIZE));
     }
 
+    // =================================================================================================================
+    // getLivros()
+    // =================================================================================================================
+
+    @Test
+    public void getLivroTestLivroNaoExistente() {
+        assertThrows(RecursoNaoEncontradoException.class,
+                () -> livrosService.getLivro(1));
+    }
+
+    @Test
+    public void getLivroSucesso() {
+        when(livrosRepository.findLivroById(1))
+                .thenReturn(Optional.of(new PageImpl<>(List.of(new Livro(1L, "Senhro dos Anéis", true)))));
+
+        livrosService.getLivro(1);
+    }
 
     // =================================================================================================================
     // salvarLivro()
@@ -139,7 +157,7 @@ public class LivrosServiceTest {
         LivroRequest livroRequest = new LivroRequest();
 
         when(authentication.getAuthorities()).thenAnswer(invocation -> List.of(new SimpleGrantedAuthority("ROLE_ADMIN")));
-        when(livrosRepository.findById(ID)).thenReturn(Optional.empty());
+        when(livrosRepository.findLivroById(ID)).thenReturn(Optional.empty());
 
         assertThrows(RecursoNaoEncontradoException.class,
                 () -> livrosService.atualizarLivro(ID, livroRequest, authentication));

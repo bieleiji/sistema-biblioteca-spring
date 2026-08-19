@@ -36,6 +36,11 @@ public class LivrosService {
         return livrosRepository.findAll(pageable);
     }
 
+    public Page<Livro> getLivro(long id) {
+        return livrosRepository.findLivroById(id)
+                .orElseThrow(() -> new RecursoNaoEncontradoException("livro não encontrado"));
+    }
+
     public ResponseEntity<Livro> salvarLivro(LivroRequest livroRequest, Authentication authentication) {
         if(!authentication.getAuthorities().toString().contains("ROLE_ADMIN"))
             throw new RecursoNaoAutorizadoException("Apenas ADMINs podem acrescentar livros ao repositório");
