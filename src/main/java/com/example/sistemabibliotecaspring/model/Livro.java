@@ -2,7 +2,6 @@ package com.example.sistemabibliotecaspring.model;
 
 import jakarta.persistence.*;
 
-import java.util.List;
 import java.util.Objects;
 
 @Entity(name = "livros")

@@ -93,14 +93,17 @@ public class LivrosServiceTest {
 
     @Test
     public void getLivroTestLivroNaoExistente() {
+        when(livrosRepository.findById(1, PageRequest.of(0,1)))
+                .thenReturn(new PageImpl<>(List.of()));
+
         assertThrows(RecursoNaoEncontradoException.class,
                 () -> livrosService.getLivro(1));
     }
 
     @Test
     public void getLivroSucesso() {
-        when(livrosRepository.findLivroById(1))
-                .thenReturn(Optional.of(new PageImpl<>(List.of(new Livro(1L, "Senhro dos Anéis", true)))));
+        when(livrosRepository.findById(1, PageRequest.of(0,1)))
+                .thenReturn(new PageImpl<>(List.of(new Livro(1L, "Senhro dos Anéis", true))));
 
         livrosService.getLivro(1);
     }
@@ -157,7 +160,7 @@ public class LivrosServiceTest {
         LivroRequest livroRequest = new LivroRequest();
 
         when(authentication.getAuthorities()).thenAnswer(invocation -> List.of(new SimpleGrantedAuthority("ROLE_ADMIN")));
-        when(livrosRepository.findLivroById(ID)).thenReturn(Optional.empty());
+        when(livrosRepository.findById(ID)).thenReturn(Optional.empty());
 
         assertThrows(RecursoNaoEncontradoException.class,
                 () -> livrosService.atualizarLivro(ID, livroRequest, authentication));

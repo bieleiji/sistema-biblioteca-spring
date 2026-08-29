@@ -37,7 +37,7 @@ public class SecurityConfig {
                             "/usuarios/criar_conta",
                                     "/usuarios/login"
                             ).permitAll()
-                                .anyRequest().authenticated();
+                                .   anyRequest().authenticated();
                 })
                 .httpBasic(httpBasic ->{})
                 .addFilterBefore(jwtAuthenticatorFilter, UsernamePasswordAuthenticationFilter.class);

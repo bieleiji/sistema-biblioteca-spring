@@ -37,8 +37,12 @@ public class LivrosService {
     }
 
     public Page<Livro> getLivro(long id) {
-        return livrosRepository.findLivroById(id)
-                .orElseThrow(() -> new RecursoNaoEncontradoException("livro não encontrado"));
+        Page<Livro> page = livrosRepository.findById(id, PageRequest.of(0,1));
+
+        if(page.getTotalElements() == 0)
+            throw new RecursoNaoEncontradoException("livro não encontrado");
+
+        return page;
     }
 
     public ResponseEntity<Livro> salvarLivro(LivroRequest livroRequest, Authentication authentication) {
