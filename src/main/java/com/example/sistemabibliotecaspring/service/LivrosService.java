@@ -49,7 +49,7 @@ public class LivrosService {
         if(!authentication.getAuthorities().toString().contains("ROLE_ADMIN"))
             throw new RecursoNaoAutorizadoException("Apenas ADMINs podem acrescentar livros ao repositório");
 
-        return ResponseEntity.status(HttpStatus.OK).body(livrosRepository.save(new Livro(livroRequest.getNome())));
+        return ResponseEntity.status(HttpStatus.CREATED).body(livrosRepository.save(new Livro(livroRequest.getNome())));
     }
 
     public ResponseEntity<Livro> atualizarLivro(long id, LivroRequest livroRequest, Authentication authentication) {

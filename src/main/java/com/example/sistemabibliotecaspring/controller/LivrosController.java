@@ -28,7 +28,7 @@ public class LivrosController {
         return livrosService.getLivros(page, size, titulo, ehEmprestado);
     }
 
-    @GetMapping("{id}")
+    @GetMapping("/{id}")
     public Page<Livro> getLivro(@PathVariable long id) {
         return livrosService.getLivro(id);
     }
