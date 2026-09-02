@@ -22,10 +22,10 @@ import org.springframework.test.web.servlet.MockMvc;
 import java.util.List;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -143,4 +143,84 @@ public class LivrosControllerTest {
                 .andExpect(jsonPath("$.nome").value(NOME_LIVRO))
                 .andExpect(jsonPath("$.emprestado").value(false));
     }
+
+    ////////////////////////////////////////////////////////////////////////////////
+    /// atualizarLivro()
+    ////////////////////////////////////////////////////////////////////////////////
+
+    @Test
+    public void atualizarLivroTestUsuarioNaoEhAdmin() throws Exception {
+        long id = 1;
+
+        when(livrosService.atualizarLivro(eq(id), any(LivroRequest.class), any()))
+                .thenThrow(new RecursoNaoAutorizadoException("Apenas ADMINs podem acrescentar livros ao repositório"));
+
+        mockMvc.perform(
+                patch("/livros/{id}",id)
+                        .with(
+                                user("gabriel")
+                                        .authorities(List.of(new SimpleGrantedAuthority("ROLE_USUARIO")))
+                        )
+                        .content("""
+                                {
+                                    "nome": "Outro Nome Livro"
+                                }
+                                """)
+                        .contentType(MediaType.APPLICATION_JSON)
+        )
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    public void atualizarLivroTestLivroNaoEncontrado() throws Exception {
+        long id = 99999;
+
+        when(livrosService.atualizarLivro(eq(id), any(LivroRequest.class), any()))
+                .thenThrow(new RecursoNaoEncontradoException("livro não encontrado"));
+
+        mockMvc.perform(
+                        patch("/livros/{id}",id)
+                                .with(
+                                        user("gabriel")
+                                                .authorities(List.of(new SimpleGrantedAuthority("ROLE_ADMIN")))
+                                )
+                                .content("""
+                                {
+                                    "nome": "Outro Nome Livro"
+                                }
+                                """)
+                                .contentType(MediaType.APPLICATION_JSON)
+                )
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    public void atualizarLivroSucesso() throws Exception {
+        long id = 1;
+        String nomeAlterado = "Outro Nome Livro";
+        boolean ehEmprestado = true;
+
+        when(livrosService.atualizarLivro(eq(id), any(LivroRequest.class), any()))
+                .thenReturn(ResponseEntity.status(HttpStatus.OK).body(new Livro(id, nomeAlterado, ehEmprestado)));
+
+        mockMvc.perform(
+                        patch("/livros/{id}",id)
+                                .with(
+                                        user("gabriel")
+                                                .authorities(List.of(new SimpleGrantedAuthority("ROLE_ADMIN")))
+                                )
+                                .content("""
+                                {
+                                    "nome": "%s",
+                                    "emprestado": %b
+                                }
+                                """.formatted(nomeAlterado, ehEmprestado))
+                                .contentType(MediaType.APPLICATION_JSON)
+                )
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(id))
+                .andExpect(jsonPath("$.nome").value(nomeAlterado))
+                .andExpect(jsonPath("$.emprestado").value(ehEmprestado));
+    }
+
 }
