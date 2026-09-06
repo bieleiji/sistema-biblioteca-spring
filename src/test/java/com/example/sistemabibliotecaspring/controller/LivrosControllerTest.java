@@ -223,4 +223,58 @@ public class LivrosControllerTest {
                 .andExpect(jsonPath("$.emprestado").value(ehEmprestado));
     }
 
+    ////////////////////////////////////////////////////////////////////////////////
+    /// deletarLivro()
+    ////////////////////////////////////////////////////////////////////////////////
+
+    @Test
+    public void deletarLivroTestUsuarioNaoEhAdmin() throws Exception {
+        long id = 1;
+
+        when(livrosService.deletarLivro(eq(id), any()))
+                .thenThrow(new RecursoNaoAutorizadoException("Apenas ADMINs podem deletar livros no repositório"));
+
+        mockMvc.perform(
+                delete("/livros/{id}", id)
+                        .with(
+                                user("gabriel")
+                                        .authorities(new SimpleGrantedAuthority("ROLE_USUARIO"))
+                        )
+        )
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    public void deletarLivroTestLivroNaoEncontrado() throws Exception {
+        long id = 999999;
+
+        when(livrosService.deletarLivro(eq(id), any()))
+                .thenThrow(new RecursoNaoEncontradoException("livro não encontrado"));
+
+        mockMvc.perform(
+                delete("/livros/{id}", id)
+                        .with(
+                                user("gabriel")
+                                        .authorities(new SimpleGrantedAuthority("ROLE_ADMIN"))
+                        )
+        )
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    public void deletarLivroSucesso() throws Exception {
+        long id = 1;
+
+        when(livrosService.deletarLivro(eq(id), any()))
+                .thenReturn(ResponseEntity.status(HttpStatus.OK).body("Livro deletado com sucesso"));
+
+        mockMvc.perform(
+                        delete("/livros/{id}", id)
+                                .with(
+                                        user("gabriel")
+                                                .authorities(new SimpleGrantedAuthority("ROLE_ADMIN"))
+                                )
+                )
+                .andExpect(status().isOk());
+    }
 }
