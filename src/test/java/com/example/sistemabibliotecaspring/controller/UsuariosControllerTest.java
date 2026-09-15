@@ -1,9 +1,12 @@
 package com.example.sistemabibliotecaspring.controller;
 
 import com.example.sistemabibliotecaspring.configuration.JwtAuthenticatorFilter;
+import com.example.sistemabibliotecaspring.dto.usuarioDTO.LogarUsuarioRequest;
 import com.example.sistemabibliotecaspring.dto.usuarioDTO.SalvarUsuarioRequest;
 import com.example.sistemabibliotecaspring.exception.RecursoEmConflitoException;
+import com.example.sistemabibliotecaspring.exception.RecursoNaoAutenticadoException;
 import com.example.sistemabibliotecaspring.exception.RecursoNaoAutorizadoException;
+import com.example.sistemabibliotecaspring.exception.RecursoNaoEncontradoException;
 import com.example.sistemabibliotecaspring.model.Role;
 import com.example.sistemabibliotecaspring.model.Usuario;
 import com.example.sistemabibliotecaspring.repository.UsuariosRepository;
@@ -27,8 +30,7 @@ import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
 import static org.springframework.security.test.web.servlet.response.SecurityMockMvcResultMatchers.authenticated;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(UsuariosController.class)
 @AutoConfigureMockMvc(addFilters = false)
@@ -47,9 +49,10 @@ public class UsuariosControllerTest {
 
     private final String NOME = "Gabriel";
     private final String SENHA = "1234";
-    private final String SENHA_CRIPTOGRAFADA = "1234Criptografado";
     private final String EMAIL = "teste@gmail.com";
+    private final String TOKEN = "tokenTeste";
     private final Role ROLE_USUARIO = Role.USUARIO;
+
 
     /////////////////////////////////////////////////////////////////////////////////
     /// salvarUsuario()
@@ -103,6 +106,7 @@ public class UsuariosControllerTest {
 
     @Test
     public void salvarUsuarioTestSucesso() throws Exception {
+        final String SENHA_CRIPTOGRAFADA = "1234Criptografado";
         when(usuariosService.salvarUsuario(any(SalvarUsuarioRequest.class), any()))
                 .thenReturn(ResponseEntity.status(HttpStatus.CREATED).body(new Usuario(NOME, EMAIL, SENHA_CRIPTOGRAFADA, ROLE_USUARIO)));
 
@@ -123,5 +127,64 @@ public class UsuariosControllerTest {
                 .andExpect(jsonPath("$.senha").value(SENHA_CRIPTOGRAFADA))
                 .andExpect(jsonPath("$.email").value(EMAIL))
                 .andExpect(jsonPath("$.role").value(ROLE_USUARIO.name()));
+    }
+
+    /////////////////////////////////////////////////////////////////////////////////
+    /// logar()
+    /////////////////////////////////////////////////////////////////////////////////
+
+    @Test
+    public void logarTestUsuairoNaoEncontrado() throws Exception {
+        when(usuariosService.logar(any(LogarUsuarioRequest.class)))
+                .thenThrow(new RecursoNaoEncontradoException("Usuário não encontrado"));
+
+        mockMvc.perform(
+                post("/usuarios/login")
+                        .content("""
+                                {
+                                    "email": "%s",
+                                    "senha": "%s"
+                                }
+                                """.formatted(EMAIL, SENHA))
+                        .contentType(MediaType.APPLICATION_JSON)
+        )
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    public void logarTestSenhaIncorreta() throws Exception {
+        when(usuariosService.logar(any(LogarUsuarioRequest.class)))
+                .thenThrow(new RecursoNaoAutenticadoException("Senha incorreta"));
+
+        mockMvc.perform(
+                        post("/usuarios/login")
+                                .content("""
+                                {
+                                    "email": "%s",
+                                    "senha": "%s"
+                                }
+                                """.formatted(EMAIL, SENHA))
+                                .contentType(MediaType.APPLICATION_JSON)
+                )
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    public void logarSucesso() throws Exception {
+        when(usuariosService.logar(any(LogarUsuarioRequest.class)))
+                .thenReturn(ResponseEntity.status(HttpStatus.OK).body(TOKEN));
+
+        mockMvc.perform(
+                        post("/usuarios/login")
+                                .content("""
+                                {
+                                    "email": "%s",
+                                    "senha": "%s"
+                                }
+                                """.formatted(EMAIL, SENHA))
+                                .contentType(MediaType.APPLICATION_JSON)
+                )
+                .andExpect(status().isOk())
+                .andExpect(content().string(TOKEN));
     }
 }
