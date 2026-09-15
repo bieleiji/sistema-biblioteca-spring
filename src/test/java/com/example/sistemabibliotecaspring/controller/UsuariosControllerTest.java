@@ -1,0 +1,127 @@
+package com.example.sistemabibliotecaspring.controller;
+
+import com.example.sistemabibliotecaspring.configuration.JwtAuthenticatorFilter;
+import com.example.sistemabibliotecaspring.dto.usuarioDTO.SalvarUsuarioRequest;
+import com.example.sistemabibliotecaspring.exception.RecursoEmConflitoException;
+import com.example.sistemabibliotecaspring.exception.RecursoNaoAutorizadoException;
+import com.example.sistemabibliotecaspring.model.Role;
+import com.example.sistemabibliotecaspring.model.Usuario;
+import com.example.sistemabibliotecaspring.repository.UsuariosRepository;
+import com.example.sistemabibliotecaspring.service.UsuariosService;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
+import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.springframework.test.web.servlet.MockMvc;
+
+import java.util.List;
+
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.when;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
+import static org.springframework.security.test.web.servlet.response.SecurityMockMvcResultMatchers.authenticated;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
+@WebMvcTest(UsuariosController.class)
+@AutoConfigureMockMvc(addFilters = false)
+public class UsuariosControllerTest {
+    @Autowired
+    public MockMvc mockMvc;
+
+    @MockitoBean
+    public UsuariosService usuariosService;
+
+    @MockitoBean
+    public UsuariosRepository usuariosRepository;
+
+    @MockitoBean
+    public JwtAuthenticatorFilter jwtAuthenticatorFilter;
+
+    private final String NOME = "Gabriel";
+    private final String SENHA = "1234";
+    private final String SENHA_CRIPTOGRAFADA = "1234Criptografado";
+    private final String EMAIL = "teste@gmail.com";
+    private final Role ROLE_USUARIO = Role.USUARIO;
+
+    /////////////////////////////////////////////////////////////////////////////////
+    /// salvarUsuario()
+    /////////////////////////////////////////////////////////////////////////////////
+
+    @Test
+    public void salvarUsuarioTestEmailRepetido() throws Exception {
+        when(usuariosService.salvarUsuario(any(SalvarUsuarioRequest.class), any()))
+                .thenThrow(new RecursoEmConflitoException("email já está sendo utilizado"));
+
+        mockMvc.perform(
+                        post("/usuarios/criar_conta")
+                                .content("""
+                                {
+                                    "nome": "%s",
+                                    "senha": "%s",
+                                    "email": "%s"
+                                }
+                                """.formatted(NOME, SENHA, EMAIL))
+                                .contentType(MediaType.APPLICATION_JSON)
+                )
+                .andExpect(status().isConflict());
+    }
+
+    @Test
+    public void salvarUsuarioTestUsuarioNaoEhAdmin() throws Exception {
+        List<GrantedAuthority> authorities = List.of(new SimpleGrantedAuthority("ROLE_USUARIO"));
+
+        when(usuariosService.salvarUsuario(any(SalvarUsuarioRequest.class), any()))
+                .thenThrow(new RecursoNaoAutorizadoException("Apenas ADMINs podem definir outros ADMINs"));
+
+        mockMvc.perform(
+                        post("/usuarios/criar_conta")
+                                .with(
+                                        user("Gabriel")
+                                                .authorities(authorities)
+                                )
+                                .content("""
+                                {
+                                    "nome": "%s",
+                                    "senha": "%s",
+                                    "email": "%s",
+                                    "role": "%s"
+                                }
+                                """.formatted(NOME, SENHA, EMAIL, Role.ADMIN))
+                                .contentType(MediaType.APPLICATION_JSON)
+                )
+                .andExpect(status().isForbidden())
+                .andExpect(authenticated().withAuthorities(authorities));
+    }
+
+    @Test
+    public void salvarUsuarioTestSucesso() throws Exception {
+        when(usuariosService.salvarUsuario(any(SalvarUsuarioRequest.class), any()))
+                .thenReturn(ResponseEntity.status(HttpStatus.CREATED).body(new Usuario(NOME, EMAIL, SENHA_CRIPTOGRAFADA, ROLE_USUARIO)));
+
+
+        mockMvc.perform(
+                        post("/usuarios/criar_conta")
+                                .content("""
+                                {
+                                    "nome": "%s",
+                                    "senha": "%s",
+                                    "email": "%s"
+                                }
+                                """.formatted(NOME, SENHA, EMAIL))
+                                .contentType(MediaType.APPLICATION_JSON)
+                )
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.nome").value(NOME))
+                .andExpect(jsonPath("$.senha").value(SENHA_CRIPTOGRAFADA))
+                .andExpect(jsonPath("$.email").value(EMAIL))
+                .andExpect(jsonPath("$.role").value(ROLE_USUARIO.name()));
+    }
+}
