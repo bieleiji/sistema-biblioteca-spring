@@ -15,6 +15,9 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -23,12 +26,15 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
 import static org.springframework.security.test.web.servlet.response.SecurityMockMvcResultMatchers.authenticated;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -49,6 +55,7 @@ public class UsuariosControllerTest {
 
     private final String NOME = "Gabriel";
     private final String SENHA = "1234";
+    private final String SENHA_CRIPTOGRAFADA = "1234Criptografado";
     private final String EMAIL = "teste@gmail.com";
     private final String TOKEN = "tokenTeste";
     private final Role ROLE_USUARIO = Role.USUARIO;
@@ -106,7 +113,6 @@ public class UsuariosControllerTest {
 
     @Test
     public void salvarUsuarioTestSucesso() throws Exception {
-        final String SENHA_CRIPTOGRAFADA = "1234Criptografado";
         when(usuariosService.salvarUsuario(any(SalvarUsuarioRequest.class), any()))
                 .thenReturn(ResponseEntity.status(HttpStatus.CREATED).body(new Usuario(NOME, EMAIL, SENHA_CRIPTOGRAFADA, ROLE_USUARIO)));
 
@@ -186,5 +192,39 @@ public class UsuariosControllerTest {
                 )
                 .andExpect(status().isOk())
                 .andExpect(content().string(TOKEN));
+    }
+
+    /////////////////////////////////////////////////////////////////////////////////
+    /// listarUsuarios()
+    /////////////////////////////////////////////////////////////////////////////////
+
+    @Test
+    public void listarUsuarios() throws Exception {
+        int page = 0, size = 10;
+
+        List<Usuario> lista = new ArrayList<>();
+        lista.add(new Usuario(NOME, EMAIL, SENHA_CRIPTOGRAFADA, ROLE_USUARIO));
+
+        Page<Usuario> pagina = new PageImpl<>(lista, PageRequest.of(page, size), lista.size());
+
+        when(usuariosService.listarUsuarios(anyInt() ,anyInt()))
+                .thenReturn(pagina);
+
+        mockMvc.perform(
+                get("/usuarios/listar")
+                        .param("page", Integer.toString(page))
+                        .param("size", Integer.toString(size))
+                        .contentType(MediaType.APPLICATION_JSON)
+        )
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content").isArray())
+                .andExpect(jsonPath("$.content[0].nome").value(NOME))
+                .andExpect(jsonPath("$.content[0].email").value(EMAIL))
+                .andExpect(jsonPath("$.content[0].senha").value(SENHA_CRIPTOGRAFADA))
+                .andExpect(jsonPath("$.content[0].role").value(ROLE_USUARIO.name()))
+                .andExpect(jsonPath("$.totalElements").value(lista.size()))
+                .andExpect(jsonPath("$.totalPages").value(1))
+                .andExpect(jsonPath("$.size").value(size))
+                .andExpect(jsonPath("$.number").value(page));
     }
 }
