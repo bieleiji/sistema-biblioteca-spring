@@ -1,7 +1,6 @@
 package com.example.sistemabibliotecaspring.service;
 
-import com.example.sistemabibliotecaspring.dto.usuarioDTO.AtualizarUsuarioRequest;
-import com.example.sistemabibliotecaspring.dto.usuarioDTO.LogarUsuarioRequest;
+import com.example.sistemabibliotecaspring.dto.usuarioDTO.*;
 import com.example.sistemabibliotecaspring.exception.RecursoEmConflitoException;
 import com.example.sistemabibliotecaspring.exception.RecursoNaoAutenticadoException;
 import com.example.sistemabibliotecaspring.exception.RecursoNaoAutorizadoException;
@@ -9,7 +8,6 @@ import com.example.sistemabibliotecaspring.exception.RecursoNaoEncontradoExcepti
 import com.example.sistemabibliotecaspring.model.Role;
 import com.example.sistemabibliotecaspring.model.Usuario;
 import com.example.sistemabibliotecaspring.repository.UsuariosRepository;
-import com.example.sistemabibliotecaspring.dto.usuarioDTO.SalvarUsuarioRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -76,8 +74,8 @@ public class UsuariosService {
         return (dadoNovo != null && !dadoNovo.isBlank());
     }
 
-    public ResponseEntity<String> atualizarUsuario(Authentication authentication,
-                                                   AtualizarUsuarioRequest atualizarUsuarioRequest) {
+    public ResponseEntity<AtualizarUsuarioResponse> atualizarUsuario(Authentication authentication,
+                                                                     AtualizarUsuarioRequest atualizarUsuarioRequest) {
 
         Usuario usuario = usuariosRepository.findByEmail(authentication.getName())
                 .orElseThrow(() -> new RecursoNaoEncontradoException("usuario não encontrado"));
@@ -98,11 +96,17 @@ public class UsuariosService {
         if (ehCampoAtualizavel(atualizarUsuarioRequest.getEmail()))
             usuario.setEmail(atualizarUsuarioRequest.getEmail());
 
-        return ResponseEntity.status(HttpStatus.OK).body(usuariosRepository.save(usuario).toString()
-                .replace(",", ", \n")
-                .replace("Usuario{","\n")
-                .replace("}","\n") +
-                "\nnovo token:\n" + tokenService.gerarToken(usuario));
+        usuariosRepository.save(usuario);
+
+        return ResponseEntity.status(HttpStatus.OK).body(
+                new AtualizarUsuarioResponse(
+                        new UsuarioResponse(
+                                usuario.getNome(),
+                                usuario.getEmail(),
+                                usuario.getRole()),
+                        tokenService.gerarToken(usuario)
+                )
+        );
     }
 
     public ResponseEntity<String> excluirUsuario(Authentication authentication) {

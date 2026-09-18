@@ -1,6 +1,7 @@
 package com.example.sistemabibliotecaspring.service;
 
 import com.example.sistemabibliotecaspring.dto.usuarioDTO.AtualizarUsuarioRequest;
+import com.example.sistemabibliotecaspring.dto.usuarioDTO.AtualizarUsuarioResponse;
 import com.example.sistemabibliotecaspring.dto.usuarioDTO.LogarUsuarioRequest;
 import com.example.sistemabibliotecaspring.dto.usuarioDTO.SalvarUsuarioRequest;
 import com.example.sistemabibliotecaspring.exception.RecursoEmConflitoException;
@@ -22,8 +23,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import java.util.List;
 import java.util.Optional;
 
-import static org.mockito.Mockito.*;
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 public class UsuariosServiceTest {
@@ -206,19 +207,15 @@ public class UsuariosServiceTest {
         when(usuariosRepository.save(novoUsuario)).thenReturn(novoUsuario);
         when(tokenService.gerarToken(novoUsuario)).thenReturn(TOKEN);
 
-        String mensagem = usuariosService
+        AtualizarUsuarioResponse usuarioResponse = usuariosService
                             .atualizarUsuario(authentication, atualizarUsuarioRequest)
                             .getBody();
 
-        String mensagemToken = "\nnovo token:\n";
-
-        assertNotNull(mensagem);
-
-        String token = mensagem.substring(mensagem.indexOf(mensagemToken) + mensagemToken.length());
+        assertNotNull(usuarioResponse);
 
         verify(usuariosRepository).save(novoUsuario);
         verify(tokenService).gerarToken(novoUsuario);
-        assertEquals(TOKEN, token);
+        assertEquals(TOKEN, usuarioResponse.getToken());
     }
 
     // =================================================================================================================

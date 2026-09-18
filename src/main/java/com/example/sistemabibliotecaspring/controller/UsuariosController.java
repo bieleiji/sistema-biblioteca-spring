@@ -1,6 +1,7 @@
 package com.example.sistemabibliotecaspring.controller;
 
 import com.example.sistemabibliotecaspring.dto.usuarioDTO.AtualizarUsuarioRequest;
+import com.example.sistemabibliotecaspring.dto.usuarioDTO.AtualizarUsuarioResponse;
 import com.example.sistemabibliotecaspring.dto.usuarioDTO.LogarUsuarioRequest;
 import com.example.sistemabibliotecaspring.model.Usuario;
 import com.example.sistemabibliotecaspring.dto.usuarioDTO.SalvarUsuarioRequest;
@@ -39,8 +40,8 @@ public class UsuariosController {
     }
 
     @PatchMapping("/atualizar")
-    public ResponseEntity<String> atualizarUsuario(Authentication authentication,
-                                                    @Valid @RequestBody AtualizarUsuarioRequest atualizarUsuarioRequest) {
+    public ResponseEntity<AtualizarUsuarioResponse> atualizarUsuario(Authentication authentication,
+                                                                     @Valid @RequestBody AtualizarUsuarioRequest atualizarUsuarioRequest) {
 
         return usuariosService.atualizarUsuario(authentication, atualizarUsuarioRequest);
     }

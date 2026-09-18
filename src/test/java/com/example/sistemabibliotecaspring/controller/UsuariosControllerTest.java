@@ -1,8 +1,7 @@
 package com.example.sistemabibliotecaspring.controller;
 
 import com.example.sistemabibliotecaspring.configuration.JwtAuthenticatorFilter;
-import com.example.sistemabibliotecaspring.dto.usuarioDTO.LogarUsuarioRequest;
-import com.example.sistemabibliotecaspring.dto.usuarioDTO.SalvarUsuarioRequest;
+import com.example.sistemabibliotecaspring.dto.usuarioDTO.*;
 import com.example.sistemabibliotecaspring.exception.RecursoEmConflitoException;
 import com.example.sistemabibliotecaspring.exception.RecursoNaoAutenticadoException;
 import com.example.sistemabibliotecaspring.exception.RecursoNaoAutorizadoException;
@@ -34,8 +33,7 @@ import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
 import static org.springframework.security.test.web.servlet.response.SecurityMockMvcResultMatchers.authenticated;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(UsuariosController.class)
@@ -59,6 +57,7 @@ public class UsuariosControllerTest {
     private final String EMAIL = "teste@gmail.com";
     private final String TOKEN = "tokenTeste";
     private final Role ROLE_USUARIO = Role.USUARIO;
+    private final Role ROLE_ADMIN = Role.ADMIN;
 
 
     /////////////////////////////////////////////////////////////////////////////////
@@ -226,5 +225,82 @@ public class UsuariosControllerTest {
                 .andExpect(jsonPath("$.totalPages").value(1))
                 .andExpect(jsonPath("$.size").value(size))
                 .andExpect(jsonPath("$.number").value(page));
+    }
+
+    /////////////////////////////////////////////////////////////////////////////////
+    /// atualizarUsuario()
+    /////////////////////////////////////////////////////////////////////////////////
+
+    @Test
+    public void atualizarUsuarioTestUsuarioNaoEncontrado() throws Exception {
+        when(usuariosService.atualizarUsuario(any(), any(AtualizarUsuarioRequest.class)))
+                .thenThrow(new RecursoNaoEncontradoException("usuario não encontrado"));
+
+        mockMvc.perform(
+                patch("/usuarios/atualizar")
+                        .with(
+                                user(NOME)
+                                        .authorities(new SimpleGrantedAuthority("ROLE_ADMIN"))
+                        )
+                        .content("{}")
+                        .contentType(MediaType.APPLICATION_JSON)
+        )
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    public void atualizarUsuarioTestUsuarioNaoEhAdminEQuerSerAdmin() throws Exception {
+        when(usuariosService.atualizarUsuario(any(), any(AtualizarUsuarioRequest.class)))
+                .thenThrow(new RecursoNaoAutorizadoException("Apenas ADMINs podem definir outros ADMINs"));
+
+        mockMvc.perform(
+                        patch("/usuarios/atualizar")
+                                .with(
+                                        user(NOME)
+                                                .authorities(new SimpleGrantedAuthority("ROLE_USUARIO"))
+                                )
+                                .content("""
+                                        {
+                                            "nome": "%s",
+                                            "senha": "%s",
+                                            "email": "%s",
+                                            "role": "%s"
+                                        }
+                                        """.formatted(NOME, SENHA, EMAIL, ROLE_ADMIN))
+                                .contentType(MediaType.APPLICATION_JSON)
+                )
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    public void atualizarUsuarioTestSucesso() throws Exception {
+        when(usuariosService.atualizarUsuario(any(), any(AtualizarUsuarioRequest.class)))
+                .thenReturn(ResponseEntity.status(HttpStatus.OK).body(
+                        new AtualizarUsuarioResponse(
+                                new UsuarioResponse(NOME, EMAIL, ROLE_ADMIN), TOKEN)
+                        )
+                );
+
+        mockMvc.perform(
+                        patch("/usuarios/atualizar")
+                                .with(
+                                        user(NOME)
+                                                .authorities(new SimpleGrantedAuthority("ROLE_ADMIN"))
+                                )
+                                .content("""
+                                        {
+                                            "nome": "%s",
+                                            "senha": "%s",
+                                            "email": "%s",
+                                            "role": "%s"
+                                        }
+                                        """.formatted(NOME, SENHA, EMAIL, ROLE_ADMIN))
+                                .contentType(MediaType.APPLICATION_JSON)
+                )
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.usuario.nome").value(NOME))
+                .andExpect(jsonPath("$.usuario.email").value(EMAIL))
+                .andExpect(jsonPath("$.usuario.role").value(ROLE_ADMIN.name()))
+                .andExpect(jsonPath("$.token").value(TOKEN));
     }
 }
