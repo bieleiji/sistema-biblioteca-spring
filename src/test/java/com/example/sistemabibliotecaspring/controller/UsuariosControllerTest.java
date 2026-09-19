@@ -303,4 +303,33 @@ public class UsuariosControllerTest {
                 .andExpect(jsonPath("$.usuario.role").value(ROLE_ADMIN.name()))
                 .andExpect(jsonPath("$.token").value(TOKEN));
     }
+
+    /////////////////////////////////////////////////////////////////////////////////
+    /// excluirUsuario()
+    /////////////////////////////////////////////////////////////////////////////////
+
+    @Test
+    public void excluirUsuarioTestUsuarioNaoEncontrado() throws Exception {
+        when(usuariosService.excluirUsuario(any()))
+                .thenThrow(new RecursoNaoEncontradoException("Usuario não encontrado"));
+
+        mockMvc.perform(
+                delete("/usuarios/excluir")
+                        .with(user(NOME))
+        )
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    public void excluirUsuarioSucesso() throws Exception {
+        when(usuariosService.excluirUsuario(any()))
+                .thenReturn(ResponseEntity.status(HttpStatus.OK).body("Usuario excluído com êxito!"));
+
+        mockMvc.perform(
+                        delete("/usuarios/excluir")
+                                .with(user(NOME))
+                )
+                .andExpect(status().isOk())
+                .andExpect(content().string("Usuario excluído com êxito!"));
+    }
 }
