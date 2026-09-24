@@ -36,13 +36,11 @@ public class LivrosService {
         return livrosRepository.findAll(pageable);
     }
 
-    public Page<Livro> getLivro(long id) {
-        Page<Livro> page = livrosRepository.findById(id, PageRequest.of(0,1));
+    public ResponseEntity<Livro> getLivro(long id) {
+        Livro livro = livrosRepository.findById(id)
+                .orElseThrow(() -> new RecursoNaoEncontradoException("livro não encontrado"));
 
-        if(page.getTotalElements() == 0)
-            throw new RecursoNaoEncontradoException("livro não encontrado");
-
-        return page;
+        return ResponseEntity.status(HttpStatus.OK).body(livro);
     }
 
     public ResponseEntity<Livro> salvarLivro(LivroRequest livroRequest, Authentication authentication) {

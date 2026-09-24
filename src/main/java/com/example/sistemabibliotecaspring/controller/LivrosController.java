@@ -29,7 +29,7 @@ public class LivrosController {
     }
 
     @GetMapping("/{id}")
-    public Page<Livro> getLivro(@PathVariable long id) {
+    public ResponseEntity<Livro> getLivro(@PathVariable long id) {
         return livrosService.getLivro(id);
     }
 

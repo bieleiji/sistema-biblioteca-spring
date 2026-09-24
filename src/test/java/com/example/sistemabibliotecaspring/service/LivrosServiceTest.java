@@ -10,7 +10,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -18,8 +17,8 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import java.util.List;
 import java.util.Optional;
 
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
-import static org.junit.jupiter.api.Assertions.*;
 
 @ExtendWith(MockitoExtension.class)
 public class LivrosServiceTest {
@@ -93,19 +92,19 @@ public class LivrosServiceTest {
 
     @Test
     public void getLivroTestLivroNaoExistente() {
-        when(livrosRepository.findById(1, PageRequest.of(0,1)))
-                .thenReturn(new PageImpl<>(List.of()));
+        when(livrosRepository.findById(1L))
+                .thenThrow(new RecursoNaoEncontradoException("livro não encontrado"));
 
         assertThrows(RecursoNaoEncontradoException.class,
-                () -> livrosService.getLivro(1));
+                () -> livrosService.getLivro(1L));
     }
 
     @Test
     public void getLivroSucesso() {
-        when(livrosRepository.findById(1, PageRequest.of(0,1)))
-                .thenReturn(new PageImpl<>(List.of(new Livro(1L, "Senhro dos Anéis", true))));
+        when(livrosRepository.findById(1L))
+                .thenReturn(Optional.of(new Livro(1L, "Senhro dos Anéis", true)));
 
-        livrosService.getLivro(1);
+        livrosService.getLivro(1L);
     }
 
     // =================================================================================================================

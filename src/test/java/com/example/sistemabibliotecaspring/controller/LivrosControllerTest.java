@@ -84,14 +84,14 @@ public class LivrosControllerTest {
     public void getLivroTestLivroSucesso() throws Exception {
 
         when(livrosService.getLivro(1))
-                .thenReturn(new PageImpl<>(List.of(new Livro(1L, "Nome", false))));
+                .thenReturn(ResponseEntity.status(HttpStatus.OK).body(new Livro(1L, "Nome", false)));
 
         mockMvc.perform(
                         get("/livros/1")
                                 .with(user("gabriel"))
                 )
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.content[0].id").value(1));
+                .andExpect(jsonPath("$.id").value(1));
     }
 
     ////////////////////////////////////////////////////////////////////////////////
