@@ -1,26 +1,32 @@
 package com.example.sistemabibliotecaspring.model;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
 
 import java.time.LocalDate;
 import java.util.Objects;
 
-@Entity(name = "emprestimos")
+@Entity
+@Table(name = "emprestimos")
 public class Emprestimo {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id_emprestimo")
     private Long id;
 
+    @NotNull
     @ManyToOne
-    @JoinColumn(name = "id_usuario")
+    @JoinColumn(name = "id_usuario", nullable = false)
     private Usuario usuario;
 
+    @NotNull
     @ManyToOne
-    @JoinColumn(name = "id_livro")
+    @JoinColumn(name = "id_livro", nullable = false)
     private Livro livro;
 
     private LocalDate data_emprestimo;
+
+    @Column(name = "data_devolucao")
     private LocalDate date_devolucao;
     private boolean devolvido;
 

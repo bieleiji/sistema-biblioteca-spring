@@ -1,6 +1,9 @@
 package com.example.sistemabibliotecaspring.model;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 
 import java.util.Objects;
 
@@ -11,11 +14,18 @@ public class Usuario {
     @Column(name = "id_usuario")
     private Long id;
 
+    @NotNull
+    @NotBlank
     private String nome;
 
+    @NotNull
+    @NotBlank
+    @Email
     @Column(unique = true)
     private String email;
 
+    @NotNull
+    @NotBlank
     private String senha;
 
     @Enumerated(EnumType.STRING)
