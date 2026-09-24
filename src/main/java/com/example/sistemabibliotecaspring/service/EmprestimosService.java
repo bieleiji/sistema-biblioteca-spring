@@ -31,6 +31,20 @@ public class EmprestimosService {
     @Autowired
     private UsuariosRepository usuariosRepository;
 
+    public ResponseEntity<Page<Emprestimo>> mostrarEmprestimosUsuario(Authentication authentication, int page, int size, Boolean devolvido) {
+        Usuario usuario = usuariosRepository.findByEmail(authentication.getName())
+                .orElseThrow(() -> new RecursoNaoEncontradoException("usuário não encontrado"));
+
+        Pageable pageable = PageRequest.of(page, size);
+        Page<Emprestimo> pagina;
+
+        if(devolvido != null)
+            pagina = emprestimosRepository.findEmprestimosByUsuarioAndDevolvido(usuario,devolvido,pageable);
+        else
+            pagina = emprestimosRepository.findEmprestimosByUsuario(usuario,pageable);
+        return ResponseEntity.status(HttpStatus.OK).body(pagina);
+    }
+
     public ResponseEntity<Object> emprestarLivro(Authentication authentication, EmprestimoRequest emprestimoRequest) {
         String email = authentication.getName();
 
@@ -69,19 +83,5 @@ public class EmprestimosService {
         return ResponseEntity.status(HttpStatus.OK).body(emprestimosRepository.save(emprestimo));
 
 
-    }
-
-    public ResponseEntity<Page<Emprestimo>> mostrarEmprestimosUsuario(Authentication authentication, int page, int size, Boolean devolvido) {
-        Usuario usuario = usuariosRepository.findByEmail(authentication.getName())
-                .orElseThrow(() -> new RecursoNaoEncontradoException("usuário não encontrado"));
-
-        Pageable pageable = PageRequest.of(page, size);
-        Page<Emprestimo> pagina;
-
-        if(devolvido != null)
-            pagina = emprestimosRepository.findEmprestimosByUsuarioAndDevolvido(usuario,devolvido,pageable);
-        else
-            pagina = emprestimosRepository.findEmprestimosByUsuario(usuario,pageable);
-        return ResponseEntity.status(HttpStatus.OK).body(pagina);
     }
 }
