@@ -173,7 +173,7 @@ public class EmprestimosServiceTest {
         verify(emprestimosRepository).save(emprestimo);
 
         assertTrue(emprestimo.isDevolvido());
-        assertEquals(LocalDate.now(), emprestimo.getDate_devolucao());
+        assertEquals(LocalDate.now(), emprestimo.getData_devolucao());
         assertFalse(livro.isEmprestado());
     }
 

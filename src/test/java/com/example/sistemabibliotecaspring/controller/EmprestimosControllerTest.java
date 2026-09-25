@@ -52,7 +52,7 @@ public class EmprestimosControllerTest {
     private final String EMAIL = "example@gmail.com";
     private final String NOME_USUARIO = "usuarioTeste";
     private final String NOME_LIVRO = "livroTeste";
-    private final LocalDate DATA = LocalDate.of(2026, 11, 19);
+    private final LocalDate DATA_EMPRESTIMO = LocalDate.of(2026, 11, 5);
 
     private final long ID_LIVRO = 1L;
 
@@ -81,7 +81,7 @@ public class EmprestimosControllerTest {
         Emprestimo emprestimoExample = new Emprestimo(
                 new Usuario(EMAIL, NOME_USUARIO),
                 new Livro(NOME_LIVRO),
-                DATA,
+                DATA_EMPRESTIMO,
                 false
         );
         List<Emprestimo> emprestimoList = new ArrayList<>(List.of(emprestimoExample));
@@ -104,7 +104,7 @@ public class EmprestimosControllerTest {
                 .andExpect(jsonPath("$.content[0].usuario.email").value(EMAIL))
                 .andExpect(jsonPath("$.content[0].livro.nome").value(NOME_LIVRO))
                 .andExpect(jsonPath("$.content[0].devolvido").value(false))
-                .andExpect(jsonPath("$.content[0].data_emprestimo").value(DATA.toString()))
+                .andExpect(jsonPath("$.content[0].data_emprestimo").value(DATA_EMPRESTIMO.toString()))
                 .andExpect(jsonPath("$.totalElements").value(emprestimoList.size()))
                 .andExpect(jsonPath("$.totalPages").value(1))
                 .andExpect(jsonPath("$.size").value(size))
@@ -171,7 +171,7 @@ public class EmprestimosControllerTest {
         Emprestimo emprestimoExample = new Emprestimo(
                 new Usuario(EMAIL, NOME_USUARIO),
                 new Livro(NOME_LIVRO),
-                DATA,
+                DATA_EMPRESTIMO,
                 false
         );
         
@@ -193,6 +193,99 @@ public class EmprestimosControllerTest {
                 .andExpect(jsonPath("$.usuario.email").value(EMAIL))
                 .andExpect(jsonPath("$.livro.nome").value(NOME_LIVRO))
                 .andExpect(jsonPath("$.devolvido").value(false))
-                .andExpect(jsonPath("$.data_emprestimo").value(DATA.toString()));
+                .andExpect(jsonPath("$.data_emprestimo").value(DATA_EMPRESTIMO.toString()));
+    }
+
+    ///////////////////////////////////////////////////////////////////////////////////////////
+    /// devolverLivro()
+    ///////////////////////////////////////////////////////////////////////////////////////////
+
+    @Test
+    public void devolverLivroTestUsuarioNaoEncontrado() throws Exception {
+        when(emprestimosService.devolverLivro(any(), any(EmprestimoRequest.class)))
+                .thenThrow(new RecursoNaoEncontradoException("usuario não encontrado"));
+
+        mockMvc.perform(
+                post("/emprestimos/devolver")
+                        .with(user(NOME_USUARIO))
+                        .content("""
+                                        {
+                                            "id": %d
+                                        }
+                                        """.formatted(ID_LIVRO))
+                        .contentType(MediaType.APPLICATION_JSON)
+        )
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    public void devolverLivroTestLivroNaoEncontrado() throws Exception {
+        when(emprestimosService.devolverLivro(any(), any(EmprestimoRequest.class)))
+                .thenThrow(new RecursoNaoEncontradoException("livro não encontrado"));
+
+        mockMvc.perform(
+                        post("/emprestimos/devolver")
+                                .with(user(NOME_USUARIO))
+                                .content("""
+                                        {
+                                            "id": %d
+                                        }
+                                        """.formatted(ID_LIVRO))
+                                .contentType(MediaType.APPLICATION_JSON)
+                )
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    public void devolverLivroTestEmprestimoNaoEncontrado() throws Exception {
+        when(emprestimosService.devolverLivro(any(), any(EmprestimoRequest.class)))
+                .thenThrow(new RecursoNaoEncontradoException("emprestimo não encontrado"));
+
+        mockMvc.perform(
+                        post("/emprestimos/devolver")
+                                .with(user(NOME_USUARIO))
+                                .content("""
+                                        {
+                                            "id": %d
+                                        }
+                                        """.formatted(ID_LIVRO))
+                                .contentType(MediaType.APPLICATION_JSON)
+                )
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    public void devolverLivroSucesso() throws Exception {
+        LocalDate data_devolucao = LocalDate.of(2026, 11, 19);
+
+        Emprestimo emprestimoExample = new Emprestimo(
+                new Usuario(EMAIL, NOME_USUARIO),
+                new Livro(NOME_LIVRO),
+                DATA_EMPRESTIMO,
+                true
+        );
+
+        emprestimoExample.setData_devolucao(data_devolucao);
+
+        when(emprestimosService.devolverLivro(any(), any(EmprestimoRequest.class)))
+                .thenReturn(ResponseEntity.status(HttpStatus.OK).body(emprestimoExample));
+
+        mockMvc.perform(
+                        post("/emprestimos/devolver")
+                                .with(user(NOME_USUARIO))
+                                .content("""
+                                        {
+                                            "id": %d
+                                        }
+                                        """.formatted(ID_LIVRO))
+                                .contentType(MediaType.APPLICATION_JSON)
+                )
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.usuario.nome").value(NOME_USUARIO))
+                .andExpect(jsonPath("$.usuario.email").value(EMAIL))
+                .andExpect(jsonPath("$.livro.nome").value(NOME_LIVRO))
+                .andExpect(jsonPath("$.devolvido").value(true))
+                .andExpect(jsonPath("$.data_emprestimo").value(DATA_EMPRESTIMO.toString()))
+                .andExpect(jsonPath("$.data_devolucao").value(data_devolucao.toString()));
     }
 }

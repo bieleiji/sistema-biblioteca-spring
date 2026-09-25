@@ -26,8 +26,7 @@ public class Emprestimo {
 
     private LocalDate data_emprestimo;
 
-    @Column(name = "data_devolucao")
-    private LocalDate date_devolucao;
+    private LocalDate data_devolucao;
     private boolean devolvido;
 
 
@@ -72,12 +71,12 @@ public class Emprestimo {
         this.data_emprestimo = data_emprestimo;
     }
 
-    public LocalDate getDate_devolucao() {
-        return date_devolucao;
+    public LocalDate getData_devolucao() {
+        return data_devolucao;
     }
 
-    public void setDate_devolucao(LocalDate date_devolucao) {
-        this.date_devolucao = date_devolucao;
+    public void setData_devolucao(LocalDate data_devolucao) {
+        this.data_devolucao = data_devolucao;
     }
 
     public boolean isDevolvido() {
@@ -93,11 +92,11 @@ public class Emprestimo {
     public boolean equals(Object o) {
         if (o == null || getClass() != o.getClass()) return false;
         Emprestimo that = (Emprestimo) o;
-        return devolvido == that.devolvido && Objects.equals(id, that.id) && Objects.equals(usuario, that.usuario) && Objects.equals(livro, that.livro) && Objects.equals(data_emprestimo, that.data_emprestimo) && Objects.equals(date_devolucao, that.date_devolucao);
+        return devolvido == that.devolvido && Objects.equals(id, that.id) && Objects.equals(usuario, that.usuario) && Objects.equals(livro, that.livro) && Objects.equals(data_emprestimo, that.data_emprestimo) && Objects.equals(data_devolucao, that.data_devolucao);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, usuario, livro, data_emprestimo, date_devolucao, devolvido);
+        return Objects.hash(id, usuario, livro, data_emprestimo, data_devolucao, devolvido);
     }
 }

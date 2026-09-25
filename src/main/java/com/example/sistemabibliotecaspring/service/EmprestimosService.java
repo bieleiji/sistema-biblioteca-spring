@@ -77,7 +77,7 @@ public class EmprestimosService {
                 .findEmprestimoByUsuarioAndLivroAndDevolvidoIsFalse(usuario,livro)
                 .orElseThrow(() -> new RecursoNaoEncontradoException("emprestimo não encontrado"));
 
-        emprestimo.setDate_devolucao(LocalDate.now());
+        emprestimo.setData_devolucao(LocalDate.now());
         emprestimo.setDevolvido(true);
         livro.setEmprestado(false);
         return ResponseEntity.status(HttpStatus.OK).body(emprestimosRepository.save(emprestimo));
