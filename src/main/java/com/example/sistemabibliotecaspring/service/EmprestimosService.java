@@ -1,6 +1,7 @@
 package com.example.sistemabibliotecaspring.service;
 
-import com.example.sistemabibliotecaspring.dto.emprestimoDTO.EmprestimoRequest;
+import com.example.sistemabibliotecaspring.dto.emprestimoDTO.request.EmprestimoRequest;
+import com.example.sistemabibliotecaspring.dto.emprestimoDTO.response.EmprestimoResponse;
 import com.example.sistemabibliotecaspring.exception.RecursoEmConflitoException;
 import com.example.sistemabibliotecaspring.exception.RecursoNaoEncontradoException;
 import com.example.sistemabibliotecaspring.model.Emprestimo;
@@ -31,21 +32,22 @@ public class EmprestimosService {
     @Autowired
     private UsuariosRepository usuariosRepository;
 
-    public ResponseEntity<Page<Emprestimo>> mostrarEmprestimosUsuario(Authentication authentication, int page, int size, Boolean devolvido) {
+    public Page<EmprestimoResponse> mostrarEmprestimosUsuario(Authentication authentication, int page, int size, Boolean devolvido) {
         Usuario usuario = usuariosRepository.findByEmail(authentication.getName())
                 .orElseThrow(() -> new RecursoNaoEncontradoException("usuário não encontrado"));
 
         Pageable pageable = PageRequest.of(page, size);
-        Page<Emprestimo> pagina;
+        Page<Emprestimo> paginaOriginal;
 
         if(devolvido != null)
-            pagina = emprestimosRepository.findEmprestimosByUsuarioAndDevolvido(usuario,devolvido,pageable);
+            paginaOriginal = emprestimosRepository.findEmprestimosByUsuarioAndDevolvido(usuario,devolvido,pageable);
         else
-            pagina = emprestimosRepository.findEmprestimosByUsuario(usuario,pageable);
-        return ResponseEntity.status(HttpStatus.OK).body(pagina);
+            paginaOriginal = emprestimosRepository.findEmprestimosByUsuario(usuario,pageable);
+
+        return paginaOriginal.map(EmprestimoResponse::new);
     }
 
-    public ResponseEntity<Object> emprestarLivro(Authentication authentication, EmprestimoRequest emprestimoRequest) {
+    public ResponseEntity<EmprestimoResponse> emprestarLivro(Authentication authentication, EmprestimoRequest emprestimoRequest) {
         String email = authentication.getName();
 
         Usuario usuario = usuariosRepository.findByEmail(email)
@@ -58,13 +60,14 @@ public class EmprestimosService {
             throw new RecursoEmConflitoException("livro já foi emprestado");
 
         else {
-            Emprestimo emprestimo = new Emprestimo(usuario, livro, LocalDate.now(), false);
             livro.setEmprestado(true);
-            return ResponseEntity.status(HttpStatus.CREATED).body(emprestimosRepository.save(emprestimo));
+            return ResponseEntity.status(HttpStatus.CREATED).body(new EmprestimoResponse(
+                    emprestimosRepository.save(new Emprestimo(usuario, livro, LocalDate.now(), false))
+            ));
         }
     }
 
-        public ResponseEntity<Object> devolverLivro(Authentication authentication, EmprestimoRequest emprestimoRequest) {
+        public ResponseEntity<EmprestimoResponse> devolverLivro(Authentication authentication, EmprestimoRequest emprestimoRequest) {
         String email = authentication.getName();
 
         Usuario usuario = usuariosRepository.findByEmail(email)
@@ -80,8 +83,7 @@ public class EmprestimosService {
         emprestimo.setData_devolucao(LocalDate.now());
         emprestimo.setDevolvido(true);
         livro.setEmprestado(false);
-        return ResponseEntity.status(HttpStatus.OK).body(emprestimosRepository.save(emprestimo));
-
-
+        return ResponseEntity.status(HttpStatus.OK).body(
+                new EmprestimoResponse(emprestimosRepository.save(emprestimo)));
     }
 }

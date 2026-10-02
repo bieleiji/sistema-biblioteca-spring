@@ -39,6 +39,14 @@ public class Emprestimo {
         this.devolvido = devolvido;
     }
 
+    public Emprestimo(Long id, Usuario usuario, Livro livro, LocalDate data_emprestimo, boolean devolvido) {
+        this.id = id;
+        this.usuario = usuario;
+        this.livro = livro;
+        this.data_emprestimo = data_emprestimo;
+        this.devolvido = devolvido;
+    }
+
     public Long getId() {
         return id;
     }

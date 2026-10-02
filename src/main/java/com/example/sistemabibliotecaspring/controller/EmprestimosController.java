@@ -1,7 +1,7 @@
 package com.example.sistemabibliotecaspring.controller;
 
-import com.example.sistemabibliotecaspring.dto.emprestimoDTO.EmprestimoRequest;
-import com.example.sistemabibliotecaspring.model.Emprestimo;
+import com.example.sistemabibliotecaspring.dto.emprestimoDTO.request.EmprestimoRequest;
+import com.example.sistemabibliotecaspring.dto.emprestimoDTO.response.EmprestimoResponse;
 import com.example.sistemabibliotecaspring.service.EmprestimosService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,7 +17,7 @@ public class EmprestimosController {
     private EmprestimosService emprestimosService;
 
     @GetMapping
-    public ResponseEntity<Page<Emprestimo>> mostrarEmprestimosUsuario(
+    public Page<EmprestimoResponse> mostrarEmprestimosUsuario(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(required = false) Boolean devolvido,
@@ -26,14 +26,14 @@ public class EmprestimosController {
     }
 
     @PostMapping("/emprestar")
-    public ResponseEntity<Object> emprestarLivro(
+    public ResponseEntity<EmprestimoResponse> emprestarLivro(
             Authentication authentication,
             @Valid @RequestBody EmprestimoRequest emprestimoRequest) {
         return emprestimosService.emprestarLivro(authentication, emprestimoRequest);
     }
 
     @PostMapping("/devolver")
-    public ResponseEntity<Object> devolverLivro(
+    public ResponseEntity<EmprestimoResponse> devolverLivro(
             Authentication authentication,
             @Valid @RequestBody EmprestimoRequest emprestimoRequest) {
         return emprestimosService.devolverLivro(authentication, emprestimoRequest);

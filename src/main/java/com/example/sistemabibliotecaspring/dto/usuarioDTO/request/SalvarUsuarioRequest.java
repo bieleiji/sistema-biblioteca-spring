@@ -1,4 +1,4 @@
-package com.example.sistemabibliotecaspring.dto.usuarioDTO;
+package com.example.sistemabibliotecaspring.dto.usuarioDTO.request;
 
 import com.example.sistemabibliotecaspring.model.Role;
 import jakarta.validation.constraints.Email;

@@ -1,7 +1,8 @@
 package com.example.sistemabibliotecaspring.controller;
 
+import com.example.sistemabibliotecaspring.dto.livroDTO.response.LivroResponse;
 import com.example.sistemabibliotecaspring.model.Livro;
-import com.example.sistemabibliotecaspring.dto.livroDTO.LivroRequest;
+import com.example.sistemabibliotecaspring.dto.livroDTO.request.LivroRequest;
 import com.example.sistemabibliotecaspring.service.LivrosService;
 import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
@@ -20,7 +21,7 @@ public class LivrosController {
     }
 
     @GetMapping
-    public Page<Livro> getLivros(
+    public Page<LivroResponse> getLivros(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(required = false) String titulo,
@@ -29,7 +30,7 @@ public class LivrosController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Livro> getLivro(@PathVariable long id) {
+    public ResponseEntity<LivroResponse> getLivro(@PathVariable long id) {
         return livrosService.getLivro(id);
     }
 

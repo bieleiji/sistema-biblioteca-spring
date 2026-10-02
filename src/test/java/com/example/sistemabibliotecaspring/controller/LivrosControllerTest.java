@@ -1,7 +1,8 @@
 package com.example.sistemabibliotecaspring.controller;
 
 import com.example.sistemabibliotecaspring.configuration.JwtAuthenticatorFilter;
-import com.example.sistemabibliotecaspring.dto.livroDTO.LivroRequest;
+import com.example.sistemabibliotecaspring.dto.livroDTO.request.LivroRequest;
+import com.example.sistemabibliotecaspring.dto.livroDTO.response.LivroResponse;
 import com.example.sistemabibliotecaspring.exception.RecursoNaoAutorizadoException;
 import com.example.sistemabibliotecaspring.exception.RecursoNaoEncontradoException;
 import com.example.sistemabibliotecaspring.model.Livro;
@@ -45,6 +46,7 @@ public class LivrosControllerTest {
     private JwtAuthenticatorFilter jwtAuthenticatorFilter;
 
     private final String NOME_LIVRO = "Livro de Teste";
+    private final long ID_LIVRO = 1L;
 
     ////////////////////////////////////////////////////////////////////////////////
     /// getLivros()
@@ -83,15 +85,17 @@ public class LivrosControllerTest {
     @Test
     public void getLivroTestLivroSucesso() throws Exception {
 
-        when(livrosService.getLivro(1))
-                .thenReturn(ResponseEntity.status(HttpStatus.OK).body(new Livro(1L, "Nome", false)));
+        when(livrosService.getLivro(ID_LIVRO))
+                .thenReturn(ResponseEntity.status(HttpStatus.OK).body(new LivroResponse(new Livro(1L, NOME_LIVRO, false))));
 
         mockMvc.perform(
                         get("/livros/1")
                                 .with(user("gabriel"))
                 )
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id").value(1));
+                .andExpect(jsonPath("$.Livro.id").value(ID_LIVRO))
+                .andExpect(jsonPath("$.Livro.nome").value(NOME_LIVRO))
+                .andExpect(jsonPath("$.Livro.emprestado").value(false));
     }
 
     ////////////////////////////////////////////////////////////////////////////////
@@ -123,7 +127,7 @@ public class LivrosControllerTest {
     @Test
     public void salvarLivroTestSucesso() throws Exception {
         when(livrosService.salvarLivro(any(LivroRequest.class), any()))
-                .thenReturn(ResponseEntity.status(HttpStatus.CREATED).body(new Livro(NOME_LIVRO)));
+                .thenReturn(ResponseEntity.status(HttpStatus.CREATED).body(new Livro(ID_LIVRO, NOME_LIVRO, false)));
 
         mockMvc.perform(
                         post("/livros")
@@ -140,8 +144,9 @@ public class LivrosControllerTest {
                                 .contentType(MediaType.APPLICATION_JSON)
                 )
                 .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.nome").value(NOME_LIVRO))
-                .andExpect(jsonPath("$.emprestado").value(false));
+                .andExpect(jsonPath("$.Livro.id").value(ID_LIVRO))
+                .andExpect(jsonPath("$.Livro.nome").value(NOME_LIVRO))
+                .andExpect(jsonPath("$.Livro.emprestado").value(false));
     }
 
     ////////////////////////////////////////////////////////////////////////////////
@@ -196,15 +201,14 @@ public class LivrosControllerTest {
 
     @Test
     public void atualizarLivroSucesso() throws Exception {
-        long id = 1;
         String nomeAlterado = "Outro Nome Livro";
         boolean ehEmprestado = true;
 
-        when(livrosService.atualizarLivro(eq(id), any(LivroRequest.class), any()))
-                .thenReturn(ResponseEntity.status(HttpStatus.OK).body(new Livro(id, nomeAlterado, ehEmprestado)));
+        when(livrosService.atualizarLivro(eq(ID_LIVRO), any(LivroRequest.class), any()))
+                .thenReturn(ResponseEntity.status(HttpStatus.OK).body(new Livro(ID_LIVRO, nomeAlterado, ehEmprestado)));
 
         mockMvc.perform(
-                        patch("/livros/{id}",id)
+                        patch("/livros/{id}", ID_LIVRO)
                                 .with(
                                         user("gabriel")
                                                 .authorities(List.of(new SimpleGrantedAuthority("ROLE_ADMIN")))
@@ -218,9 +222,9 @@ public class LivrosControllerTest {
                                 .contentType(MediaType.APPLICATION_JSON)
                 )
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id").value(id))
-                .andExpect(jsonPath("$.nome").value(nomeAlterado))
-                .andExpect(jsonPath("$.emprestado").value(ehEmprestado));
+                .andExpect(jsonPath("$.Livro.id").value(ID_LIVRO))
+                .andExpect(jsonPath("$.Livro.nome").value(nomeAlterado))
+                .andExpect(jsonPath("$.Livro.emprestado").value(ehEmprestado));
     }
 
     ////////////////////////////////////////////////////////////////////////////////
@@ -263,13 +267,11 @@ public class LivrosControllerTest {
 
     @Test
     public void deletarLivroSucesso() throws Exception {
-        long id = 1;
-
-        when(livrosService.deletarLivro(eq(id), any()))
+        when(livrosService.deletarLivro(eq(ID_LIVRO), any()))
                 .thenReturn(ResponseEntity.status(HttpStatus.OK).body("Livro deletado com sucesso"));
 
         mockMvc.perform(
-                        delete("/livros/{id}", id)
+                        delete("/livros/{id}", ID_LIVRO)
                                 .with(
                                         user("gabriel")
                                                 .authorities(new SimpleGrantedAuthority("ROLE_ADMIN"))

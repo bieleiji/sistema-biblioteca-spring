@@ -1,10 +1,11 @@
 package com.example.sistemabibliotecaspring.service;
 
+import com.example.sistemabibliotecaspring.dto.livroDTO.response.LivroResponse;
 import com.example.sistemabibliotecaspring.exception.RecursoNaoAutorizadoException;
 import com.example.sistemabibliotecaspring.exception.RecursoNaoEncontradoException;
 import com.example.sistemabibliotecaspring.model.Livro;
 import com.example.sistemabibliotecaspring.repository.LivrosRepository;
-import com.example.sistemabibliotecaspring.dto.livroDTO.LivroRequest;
+import com.example.sistemabibliotecaspring.dto.livroDTO.request.LivroRequest;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -21,26 +22,29 @@ public class LivrosService {
         this.livrosRepository = livrosRepository;
     }
 
-    public Page<Livro> getLivros(int page, int size, String titulo, Boolean ehEmprestado) {
+    public Page<LivroResponse> getLivros(int page, int size, String titulo, Boolean ehEmprestado) {
         Pageable pageable = PageRequest.of(page, size);
+        Page<Livro> paginaOriginal;
 
         if(titulo != null && ehEmprestado != null)
-            return livrosRepository.findByNomeContainingIgnoreCaseAndEmprestado(titulo, ehEmprestado, pageable);
+            paginaOriginal = livrosRepository.findByNomeContainingIgnoreCaseAndEmprestado(titulo, ehEmprestado, pageable);
 
-        if(titulo != null)
-            return livrosRepository.findByNomeContainingIgnoreCase(titulo, pageable);
+        else if(titulo != null)
+            paginaOriginal = livrosRepository.findByNomeContainingIgnoreCase(titulo, pageable);
 
-        if(ehEmprestado != null)
-            return livrosRepository.findByEmprestado(ehEmprestado, pageable);
+        else if(ehEmprestado != null)
+            paginaOriginal = livrosRepository.findByEmprestado(ehEmprestado, pageable);
 
-        return livrosRepository.findAll(pageable);
+        else paginaOriginal = livrosRepository.findAll(pageable);
+
+        return paginaOriginal.map(LivroResponse::new);
     }
 
-    public ResponseEntity<Livro> getLivro(long id) {
+    public ResponseEntity<LivroResponse> getLivro(long id) {
         Livro livro = livrosRepository.findById(id)
                 .orElseThrow(() -> new RecursoNaoEncontradoException("livro não encontrado"));
 
-        return ResponseEntity.status(HttpStatus.OK).body(livro);
+        return ResponseEntity.status(HttpStatus.OK).body(new LivroResponse(livro));
     }
 
     public ResponseEntity<Livro> salvarLivro(LivroRequest livroRequest, Authentication authentication) {

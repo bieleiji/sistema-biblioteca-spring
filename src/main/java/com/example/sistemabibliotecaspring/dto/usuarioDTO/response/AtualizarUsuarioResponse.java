@@ -1,5 +1,8 @@
-package com.example.sistemabibliotecaspring.dto.usuarioDTO;
+package com.example.sistemabibliotecaspring.dto.usuarioDTO.response;
 
+import com.fasterxml.jackson.annotation.JsonRootName;
+
+@JsonRootName("DadosAtualizados")
 public class AtualizarUsuarioResponse {
     private UsuarioResponse usuarioResponse;
     private String token;

@@ -1,6 +1,11 @@
 package com.example.sistemabibliotecaspring.service;
 
-import com.example.sistemabibliotecaspring.dto.usuarioDTO.*;
+import com.example.sistemabibliotecaspring.dto.tokenDTO.TokenResponse;
+import com.example.sistemabibliotecaspring.dto.usuarioDTO.request.AtualizarUsuarioRequest;
+import com.example.sistemabibliotecaspring.dto.usuarioDTO.request.LogarUsuarioRequest;
+import com.example.sistemabibliotecaspring.dto.usuarioDTO.request.SalvarUsuarioRequest;
+import com.example.sistemabibliotecaspring.dto.usuarioDTO.response.AtualizarUsuarioResponse;
+import com.example.sistemabibliotecaspring.dto.usuarioDTO.response.UsuarioResponse;
 import com.example.sistemabibliotecaspring.exception.RecursoEmConflitoException;
 import com.example.sistemabibliotecaspring.exception.RecursoNaoAutenticadoException;
 import com.example.sistemabibliotecaspring.exception.RecursoNaoAutorizadoException;
@@ -33,7 +38,7 @@ public class UsuariosService {
         return (usuariosRepository.findByEmail(email).isPresent());
     }
 
-    public ResponseEntity<Object> salvarUsuario(SalvarUsuarioRequest salvarUsuarioRequest, Authentication authentication) {
+    public ResponseEntity<UsuarioResponse> salvarUsuario(SalvarUsuarioRequest salvarUsuarioRequest, Authentication authentication) {
         Usuario usuario = new Usuario();
 
         if(salvarUsuarioRequest.getRole() == null) salvarUsuarioRequest.setRole(Role.USUARIO);
@@ -52,22 +57,22 @@ public class UsuariosService {
             else throw new RecursoNaoAutorizadoException("Apenas ADMINs podem definir outros ADMINs");
         }
 
-        return ResponseEntity.status(HttpStatus.CREATED).body(usuariosRepository.save(usuario));
+        return ResponseEntity.status(HttpStatus.CREATED).body(new UsuarioResponse(usuariosRepository.save(usuario)));
     }
 
-    public ResponseEntity<String> logar(LogarUsuarioRequest logarUsuarioRequest) {
+    public ResponseEntity<TokenResponse> logar(LogarUsuarioRequest logarUsuarioRequest) {
         Usuario usuario = usuariosRepository.findByEmail(logarUsuarioRequest.getEmail())
                 .orElseThrow(() -> new RecursoNaoEncontradoException("Usuário não encontrado"));
 
         if(!passwordEncoder.matches(logarUsuarioRequest.getSenha(), usuario.getSenha()))
             throw new RecursoNaoAutenticadoException("Senha incorreta");
 
-        return ResponseEntity.status(HttpStatus.OK).body(tokenService.gerarToken(usuario));
+        return ResponseEntity.status(HttpStatus.OK).body(new TokenResponse(tokenService.gerarToken(usuario)));
     }
 
-    public Page<Usuario> listarUsuarios(int page, int size) {
+    public Page<UsuarioResponse> listarUsuarios(int page, int size) {
         Pageable pageable = PageRequest.of(page, size);
-        return usuariosRepository.findAll(pageable);
+        return usuariosRepository.findAll(pageable).map(UsuarioResponse::new);
     }
 
     private static boolean ehCampoAtualizavel(String dadoNovo) {
@@ -100,10 +105,7 @@ public class UsuariosService {
 
         return ResponseEntity.status(HttpStatus.OK).body(
                 new AtualizarUsuarioResponse(
-                        new UsuarioResponse(
-                                usuario.getNome(),
-                                usuario.getEmail(),
-                                usuario.getRole()),
+                        new UsuarioResponse(usuario),
                         tokenService.gerarToken(usuario)
                 )
         );

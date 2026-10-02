@@ -1,6 +1,6 @@
 package com.example.sistemabibliotecaspring.service;
 
-import com.example.sistemabibliotecaspring.dto.livroDTO.LivroRequest;
+import com.example.sistemabibliotecaspring.dto.livroDTO.request.LivroRequest;
 import com.example.sistemabibliotecaspring.exception.RecursoNaoAutorizadoException;
 import com.example.sistemabibliotecaspring.exception.RecursoNaoEncontradoException;
 import com.example.sistemabibliotecaspring.model.Livro;
@@ -10,6 +10,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -41,6 +42,9 @@ public class LivrosServiceTest {
 
     @Test
     public void getLivrosTestSemFiltro() {
+        when(livrosRepository.findAll(PageRequest.of(PAGE, SIZE)))
+                .thenReturn(new PageImpl<>(List.of()));
+
         livrosService.getLivros(PAGE,SIZE,null,null);
 
         verify(livrosRepository).findAll(PageRequest.of(PAGE, SIZE));
@@ -48,6 +52,9 @@ public class LivrosServiceTest {
 
     @Test
     public void getLivrosTestComFiltroEmprestimoTrue() {
+        when(livrosRepository.findByEmprestado(true, PageRequest.of(PAGE, SIZE)))
+                .thenReturn(new PageImpl<>(List.of()));
+
         livrosService.getLivros(PAGE,SIZE,null,true);
 
         verify(livrosRepository).findByEmprestado(true, PageRequest.of(PAGE, SIZE));
@@ -55,6 +62,9 @@ public class LivrosServiceTest {
 
     @Test
     public void getLivrosTestComFiltroEmprestimoFalse() {
+        when(livrosRepository.findByEmprestado(false, PageRequest.of(PAGE, SIZE)))
+                .thenReturn(new PageImpl<>(List.of()));
+
         livrosService.getLivros(PAGE,SIZE,null,false);
 
         verify(livrosRepository).findByEmprestado(false, PageRequest.of(PAGE, SIZE));
@@ -62,6 +72,8 @@ public class LivrosServiceTest {
 
     @Test
     public void getLivrosTestComFiltroTitulo() {
+        when(livrosRepository.findByNomeContainingIgnoreCase(TITULO,PageRequest.of(PAGE, SIZE)))
+                .thenReturn(new PageImpl<>(List.of()));
 
         livrosService.getLivros(PAGE,SIZE,TITULO,null);
 
@@ -72,18 +84,29 @@ public class LivrosServiceTest {
     public void getLivrosTestComFiltroTituloEmprestimoTrue() {
         boolean ehEmprestado = true;
 
+        when(livrosRepository
+                .findByNomeContainingIgnoreCaseAndEmprestado(TITULO,ehEmprestado,PageRequest.of(PAGE, SIZE)))
+                .thenReturn(new PageImpl<>(List.of()));
+
         livrosService.getLivros(PAGE,SIZE,TITULO,ehEmprestado);
 
-        verify(livrosRepository).findByNomeContainingIgnoreCaseAndEmprestado(TITULO,ehEmprestado,PageRequest.of(PAGE, SIZE));
+        verify(livrosRepository)
+                .findByNomeContainingIgnoreCaseAndEmprestado(TITULO,ehEmprestado,PageRequest.of(PAGE, SIZE));
     }
 
     @Test
     public void getLivrosTestComFiltroTituloEmprestimoFalse() {
         boolean ehEmprestado = false;
 
+        when(livrosRepository
+                        .findByNomeContainingIgnoreCaseAndEmprestado(TITULO,ehEmprestado,PageRequest.of(PAGE, SIZE)))
+                .thenReturn(new PageImpl<>(List.of()));
+
+
         livrosService.getLivros(PAGE,SIZE,TITULO,ehEmprestado);
 
-        verify(livrosRepository).findByNomeContainingIgnoreCaseAndEmprestado(TITULO,ehEmprestado,PageRequest.of(PAGE, SIZE));
+        verify(livrosRepository)
+                .findByNomeContainingIgnoreCaseAndEmprestado(TITULO,ehEmprestado,PageRequest.of(PAGE, SIZE));
     }
 
     // =================================================================================================================

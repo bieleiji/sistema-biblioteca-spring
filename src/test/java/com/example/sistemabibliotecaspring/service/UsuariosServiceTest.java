@@ -1,9 +1,9 @@
 package com.example.sistemabibliotecaspring.service;
 
-import com.example.sistemabibliotecaspring.dto.usuarioDTO.AtualizarUsuarioRequest;
-import com.example.sistemabibliotecaspring.dto.usuarioDTO.AtualizarUsuarioResponse;
-import com.example.sistemabibliotecaspring.dto.usuarioDTO.LogarUsuarioRequest;
-import com.example.sistemabibliotecaspring.dto.usuarioDTO.SalvarUsuarioRequest;
+import com.example.sistemabibliotecaspring.dto.usuarioDTO.request.AtualizarUsuarioRequest;
+import com.example.sistemabibliotecaspring.dto.usuarioDTO.response.AtualizarUsuarioResponse;
+import com.example.sistemabibliotecaspring.dto.usuarioDTO.request.LogarUsuarioRequest;
+import com.example.sistemabibliotecaspring.dto.usuarioDTO.request.SalvarUsuarioRequest;
 import com.example.sistemabibliotecaspring.exception.RecursoEmConflitoException;
 import com.example.sistemabibliotecaspring.exception.RecursoNaoAutenticadoException;
 import com.example.sistemabibliotecaspring.exception.RecursoNaoAutorizadoException;
@@ -21,6 +21,7 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -82,6 +83,7 @@ public class UsuariosServiceTest {
 
     @Test
     public void salvarUsuarioSucesso() {
+        Usuario usuario = new Usuario(NOME, EMAIL, SENHA_CRIPTOGRAFADA,  ROLE_ADMIN);
         Authentication authentication = mock(Authentication.class);
         SalvarUsuarioRequest salvarUsuarioRequest = mock(SalvarUsuarioRequest.class);
 
@@ -91,13 +93,14 @@ public class UsuariosServiceTest {
         when(salvarUsuarioRequest.getNome()).thenReturn(NOME);
         when(salvarUsuarioRequest.getRole()).thenReturn(Role.ADMIN);
         when(usuariosRepository.findByEmail(EMAIL)).thenReturn(Optional.empty());
+        when(usuariosRepository.save(usuario)).thenReturn(usuario);
         when(authentication.getAuthorities())
                 .thenAnswer(invocation ->
                         List.of(new SimpleGrantedAuthority("ROLE_ADMIN")));
 
         usuariosService.salvarUsuario(salvarUsuarioRequest, authentication);
 
-        verify(usuariosRepository).save(new Usuario(NOME, EMAIL, SENHA_CRIPTOGRAFADA,  ROLE_ADMIN));
+        verify(usuariosRepository).save(usuario);
     }
 
 
@@ -142,7 +145,7 @@ public class UsuariosServiceTest {
         when(passwordEncoder.matches(SENHA, usuario.getSenha())).thenReturn(true);
         when(tokenService.gerarToken(usuario)).thenReturn(TOKEN);
 
-        String token = usuariosService.logar(logarUsuarioRequest).getBody();
+        String token = Objects.requireNonNull(usuariosService.logar(logarUsuarioRequest).getBody()).getToken();
 
         verify(tokenService).gerarToken(usuario);
 

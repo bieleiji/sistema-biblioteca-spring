@@ -1,10 +1,11 @@
 package com.example.sistemabibliotecaspring.controller;
 
-import com.example.sistemabibliotecaspring.dto.usuarioDTO.AtualizarUsuarioRequest;
-import com.example.sistemabibliotecaspring.dto.usuarioDTO.AtualizarUsuarioResponse;
-import com.example.sistemabibliotecaspring.dto.usuarioDTO.LogarUsuarioRequest;
-import com.example.sistemabibliotecaspring.model.Usuario;
-import com.example.sistemabibliotecaspring.dto.usuarioDTO.SalvarUsuarioRequest;
+import com.example.sistemabibliotecaspring.dto.tokenDTO.TokenResponse;
+import com.example.sistemabibliotecaspring.dto.usuarioDTO.request.AtualizarUsuarioRequest;
+import com.example.sistemabibliotecaspring.dto.usuarioDTO.request.LogarUsuarioRequest;
+import com.example.sistemabibliotecaspring.dto.usuarioDTO.request.SalvarUsuarioRequest;
+import com.example.sistemabibliotecaspring.dto.usuarioDTO.response.AtualizarUsuarioResponse;
+import com.example.sistemabibliotecaspring.dto.usuarioDTO.response.UsuarioResponse;
 import com.example.sistemabibliotecaspring.service.UsuariosService;
 import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
@@ -22,19 +23,19 @@ public class UsuariosController {
     }
 
     @PostMapping("/criar_conta")
-    public ResponseEntity<Object> salvarUsuario(
+    public ResponseEntity<UsuarioResponse> salvarUsuario(
             Authentication authentication,
             @Valid @RequestBody SalvarUsuarioRequest salvarUsuarioRequest) {
         return usuariosService.salvarUsuario(salvarUsuarioRequest, authentication);
     }
 
     @PostMapping("/login")
-    public ResponseEntity<String> logar(@Valid @RequestBody LogarUsuarioRequest logarUsuarioRequest) {
+    public ResponseEntity<TokenResponse> logar(@Valid @RequestBody LogarUsuarioRequest logarUsuarioRequest) {
         return usuariosService.logar(logarUsuarioRequest);
     }
 
     @GetMapping("/listar")
-    public Page<Usuario> listarUsuarios(@RequestParam(defaultValue = "0") int page,
+    public Page<UsuarioResponse> listarUsuarios(@RequestParam(defaultValue = "0") int page,
                                         @RequestParam(defaultValue = "10") int size){
         return usuariosService.listarUsuarios(page, size);
     }

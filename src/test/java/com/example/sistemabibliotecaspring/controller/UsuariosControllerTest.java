@@ -1,7 +1,12 @@
 package com.example.sistemabibliotecaspring.controller;
 
 import com.example.sistemabibliotecaspring.configuration.JwtAuthenticatorFilter;
-import com.example.sistemabibliotecaspring.dto.usuarioDTO.*;
+import com.example.sistemabibliotecaspring.dto.tokenDTO.TokenResponse;
+import com.example.sistemabibliotecaspring.dto.usuarioDTO.request.AtualizarUsuarioRequest;
+import com.example.sistemabibliotecaspring.dto.usuarioDTO.request.LogarUsuarioRequest;
+import com.example.sistemabibliotecaspring.dto.usuarioDTO.request.SalvarUsuarioRequest;
+import com.example.sistemabibliotecaspring.dto.usuarioDTO.response.AtualizarUsuarioResponse;
+import com.example.sistemabibliotecaspring.dto.usuarioDTO.response.UsuarioResponse;
 import com.example.sistemabibliotecaspring.exception.RecursoEmConflitoException;
 import com.example.sistemabibliotecaspring.exception.RecursoNaoAutenticadoException;
 import com.example.sistemabibliotecaspring.exception.RecursoNaoAutorizadoException;
@@ -113,7 +118,7 @@ public class UsuariosControllerTest {
     @Test
     public void salvarUsuarioTestSucesso() throws Exception {
         when(usuariosService.salvarUsuario(any(SalvarUsuarioRequest.class), any()))
-                .thenReturn(ResponseEntity.status(HttpStatus.CREATED).body(new Usuario(NOME, EMAIL, SENHA_CRIPTOGRAFADA, ROLE_USUARIO)));
+                .thenReturn(ResponseEntity.status(HttpStatus.CREATED).body(new UsuarioResponse(new Usuario(NOME, EMAIL, SENHA_CRIPTOGRAFADA, ROLE_USUARIO))));
 
 
         mockMvc.perform(
@@ -128,10 +133,9 @@ public class UsuariosControllerTest {
                                 .contentType(MediaType.APPLICATION_JSON)
                 )
                 .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.nome").value(NOME))
-                .andExpect(jsonPath("$.senha").value(SENHA_CRIPTOGRAFADA))
-                .andExpect(jsonPath("$.email").value(EMAIL))
-                .andExpect(jsonPath("$.role").value(ROLE_USUARIO.name()));
+                .andExpect(jsonPath("$.Usuario.nome").value(NOME))
+                .andExpect(jsonPath("$.Usuario.email").value(EMAIL))
+                .andExpect(jsonPath("$.Usuario.role").value(ROLE_USUARIO.name()));
     }
 
     /////////////////////////////////////////////////////////////////////////////////
@@ -177,7 +181,7 @@ public class UsuariosControllerTest {
     @Test
     public void logarSucesso() throws Exception {
         when(usuariosService.logar(any(LogarUsuarioRequest.class)))
-                .thenReturn(ResponseEntity.status(HttpStatus.OK).body(TOKEN));
+                .thenReturn(ResponseEntity.status(HttpStatus.OK).body(new TokenResponse(TOKEN)));
 
         mockMvc.perform(
                         post("/usuarios/login")
@@ -190,7 +194,7 @@ public class UsuariosControllerTest {
                                 .contentType(MediaType.APPLICATION_JSON)
                 )
                 .andExpect(status().isOk())
-                .andExpect(content().string(TOKEN));
+                .andExpect(jsonPath("$.Token.token").value(TOKEN));
     }
 
     /////////////////////////////////////////////////////////////////////////////////
@@ -201,10 +205,10 @@ public class UsuariosControllerTest {
     public void listarUsuarios() throws Exception {
         int page = 0, size = 10;
 
-        List<Usuario> lista = new ArrayList<>();
-        lista.add(new Usuario(NOME, EMAIL, SENHA_CRIPTOGRAFADA, ROLE_USUARIO));
+        List<UsuarioResponse> lista = new ArrayList<>();
+        lista.add(new UsuarioResponse(new Usuario(NOME, EMAIL, SENHA_CRIPTOGRAFADA, ROLE_USUARIO)));
 
-        Page<Usuario> pagina = new PageImpl<>(lista, PageRequest.of(page, size), lista.size());
+        Page<UsuarioResponse> pagina = new PageImpl<>(lista, PageRequest.of(page, size), lista.size());
 
         when(usuariosService.listarUsuarios(anyInt() ,anyInt()))
                 .thenReturn(pagina);
@@ -216,15 +220,14 @@ public class UsuariosControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
         )
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.content").isArray())
-                .andExpect(jsonPath("$.content[0].nome").value(NOME))
-                .andExpect(jsonPath("$.content[0].email").value(EMAIL))
-                .andExpect(jsonPath("$.content[0].senha").value(SENHA_CRIPTOGRAFADA))
-                .andExpect(jsonPath("$.content[0].role").value(ROLE_USUARIO.name()))
-                .andExpect(jsonPath("$.totalElements").value(lista.size()))
-                .andExpect(jsonPath("$.totalPages").value(1))
-                .andExpect(jsonPath("$.size").value(size))
-                .andExpect(jsonPath("$.number").value(page));
+                .andExpect(jsonPath("$.PageImpl.content").isArray())
+                .andExpect(jsonPath("$.PageImpl.content[0].nome").value(NOME))
+                .andExpect(jsonPath("$.PageImpl.content[0].email").value(EMAIL))
+                .andExpect(jsonPath("$.PageImpl.content[0].role").value(ROLE_USUARIO.name()))
+                .andExpect(jsonPath("$.PageImpl.totalElements").value(lista.size()))
+                .andExpect(jsonPath("$.PageImpl.totalPages").value(1))
+                .andExpect(jsonPath("$.PageImpl.size").value(size))
+                .andExpect(jsonPath("$.PageImpl.number").value(page));
     }
 
     /////////////////////////////////////////////////////////////////////////////////
@@ -298,10 +301,10 @@ public class UsuariosControllerTest {
                                 .contentType(MediaType.APPLICATION_JSON)
                 )
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.usuario.nome").value(NOME))
-                .andExpect(jsonPath("$.usuario.email").value(EMAIL))
-                .andExpect(jsonPath("$.usuario.role").value(ROLE_ADMIN.name()))
-                .andExpect(jsonPath("$.token").value(TOKEN));
+                .andExpect(jsonPath("$.DadosAtualizados.usuario.nome").value(NOME))
+                .andExpect(jsonPath("$.DadosAtualizados.usuario.email").value(EMAIL))
+                .andExpect(jsonPath("$.DadosAtualizados.usuario.role").value(ROLE_ADMIN.name()))
+                .andExpect(jsonPath("$.DadosAtualizados.token").value(TOKEN));
     }
 
     /////////////////////////////////////////////////////////////////////////////////
