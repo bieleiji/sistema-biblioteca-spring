@@ -145,7 +145,7 @@ public class UsuariosServiceTest {
         when(passwordEncoder.matches(SENHA, usuario.getSenha())).thenReturn(true);
         when(tokenService.gerarToken(usuario)).thenReturn(TOKEN);
 
-        String token = Objects.requireNonNull(usuariosService.logar(logarUsuarioRequest).getBody()).getToken();
+        String token = Objects.requireNonNull(usuariosService.logar(logarUsuarioRequest).getBody()).token();
 
         verify(tokenService).gerarToken(usuario);
 

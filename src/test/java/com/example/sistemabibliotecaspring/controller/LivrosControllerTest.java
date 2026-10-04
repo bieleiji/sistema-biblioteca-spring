@@ -116,7 +116,7 @@ public class LivrosControllerTest {
                         .content("""
                                 {
                                     "nome": "%s",
-                                    "emprestado": false
+                                    "eh_emprestado": false
                                 }
                                 """.formatted(NOME_LIVRO))
                         .contentType(MediaType.APPLICATION_JSON)
@@ -138,7 +138,7 @@ public class LivrosControllerTest {
                                 .content("""
                                 {
                                     "nome": "%s",
-                                    "emprestado": false
+                                    "eh_emprestado": false
                                 }
                                 """.formatted(NOME_LIVRO))
                                 .contentType(MediaType.APPLICATION_JSON)
@@ -216,7 +216,7 @@ public class LivrosControllerTest {
                                 .content("""
                                 {
                                     "nome": "%s",
-                                    "emprestado": %b
+                                    "eh_emprestado": %b
                                 }
                                 """.formatted(nomeAlterado, ehEmprestado))
                                 .contentType(MediaType.APPLICATION_JSON)

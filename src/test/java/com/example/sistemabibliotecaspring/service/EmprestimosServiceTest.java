@@ -65,7 +65,7 @@ public class EmprestimosServiceTest {
 
         when(authentication.getName()).thenReturn(emailValido);
         when(usuariosRepository.findByEmail(emailValido)).thenReturn(Optional.of(usuario));
-        when(livrosRepository.findById(emprestimoRequest.getId_livro())).thenReturn(Optional.empty());
+        when(livrosRepository.findById(emprestimoRequest.id_livro())).thenReturn(Optional.empty());
 
 
         assertThrows(RecursoNaoEncontradoException.class,
@@ -78,11 +78,11 @@ public class EmprestimosServiceTest {
         EmprestimoRequest emprestimoRequest = new EmprestimoRequest(2L);
         String emailValido = "example@gmail.com";
         Usuario usuario = new Usuario(emailValido, "NomeTeste");
-        Livro livro = new Livro(emprestimoRequest.getId_livro(), "LivroTeste", true);
+        Livro livro = new Livro(emprestimoRequest.id_livro(), "LivroTeste", true);
 
         when(authentication.getName()).thenReturn(emailValido);
         when(usuariosRepository.findByEmail(emailValido)).thenReturn(Optional.of(usuario));
-        when(livrosRepository.findById(emprestimoRequest.getId_livro())).thenReturn(Optional.of(livro));
+        when(livrosRepository.findById(emprestimoRequest.id_livro())).thenReturn(Optional.of(livro));
 
         assertThrows(RecursoEmConflitoException.class,
                 () -> emprestimosService.emprestarLivro(authentication,emprestimoRequest));
@@ -94,12 +94,12 @@ public class EmprestimosServiceTest {
         EmprestimoRequest emprestimoRequest = new EmprestimoRequest(2L);
         String emailValido = "example@gmail.com";
         Usuario usuario = new Usuario(emailValido, "NomeTeste");
-        Livro livro = new Livro(emprestimoRequest.getId_livro(), "LivroTeste", false);
+        Livro livro = new Livro(emprestimoRequest.id_livro(), "LivroTeste", false);
         Emprestimo emprestimo = new Emprestimo(usuario, livro, LocalDate.now(), false);
 
         when(authentication.getName()).thenReturn(emailValido);
         when(usuariosRepository.findByEmail(emailValido)).thenReturn(Optional.of(usuario));
-        when(livrosRepository.findById(emprestimoRequest.getId_livro())).thenReturn(Optional.of(livro));
+        when(livrosRepository.findById(emprestimoRequest.id_livro())).thenReturn(Optional.of(livro));
         when(emprestimosRepository.save(emprestimo)).thenReturn(
                 new Emprestimo(1L, usuario, livro, LocalDate.now(), false));
 
@@ -134,7 +134,7 @@ public class EmprestimosServiceTest {
 
         when(authentication.getName()).thenReturn(emailValido);
         when(usuariosRepository.findByEmail(emailValido)).thenReturn(Optional.of(usuario));
-        when(livrosRepository.findById(emprestimoRequest.getId_livro())).thenReturn(Optional.empty());
+        when(livrosRepository.findById(emprestimoRequest.id_livro())).thenReturn(Optional.empty());
 
         assertThrows(RecursoNaoEncontradoException.class,
                 () -> emprestimosService.devolverLivro(authentication, emprestimoRequest));
@@ -146,11 +146,11 @@ public class EmprestimosServiceTest {
         EmprestimoRequest emprestimoRequest = new EmprestimoRequest(2L);
         String emailValido = "example@gmail.com";
         Usuario usuario = new Usuario(emailValido, "NomeTeste");
-        Livro livro = new Livro(emprestimoRequest.getId_livro(), "LivroTeste", true);
+        Livro livro = new Livro(emprestimoRequest.id_livro(), "LivroTeste", true);
 
         when(authentication.getName()).thenReturn(emailValido);
         when(usuariosRepository.findByEmail(emailValido)).thenReturn(Optional.of(usuario));
-        when(livrosRepository.findById(emprestimoRequest.getId_livro())).thenReturn(Optional.of(livro));
+        when(livrosRepository.findById(emprestimoRequest.id_livro())).thenReturn(Optional.of(livro));
         when(emprestimosRepository.findEmprestimoByUsuarioAndLivroAndDevolvidoIsFalse(usuario,livro))
                 .thenReturn(Optional.empty());
 
@@ -164,12 +164,12 @@ public class EmprestimosServiceTest {
         EmprestimoRequest emprestimoRequest = new EmprestimoRequest(2L);
         String emailValido = "example@gmail.com";
         Usuario usuario = new Usuario(emailValido, "NomeTeste");
-        Livro livro = new Livro(emprestimoRequest.getId_livro(), "LivroTeste", true);
+        Livro livro = new Livro(emprestimoRequest.id_livro(), "LivroTeste", true);
         Emprestimo emprestimo = new Emprestimo(1L, usuario, livro, LocalDate.now(), false);
 
         when(authentication.getName()).thenReturn(emailValido);
         when(usuariosRepository.findByEmail(emailValido)).thenReturn(Optional.of(usuario));
-        when(livrosRepository.findById(emprestimoRequest.getId_livro())).thenReturn(Optional.of(livro));
+        when(livrosRepository.findById(emprestimoRequest.id_livro())).thenReturn(Optional.of(livro));
         when(emprestimosRepository.findEmprestimoByUsuarioAndLivroAndDevolvidoIsFalse(usuario,livro))
                 .thenReturn(Optional.of(emprestimo));
         when(emprestimosRepository.save(any(Emprestimo.class)))

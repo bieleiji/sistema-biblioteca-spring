@@ -53,7 +53,7 @@ public class EmprestimosService {
         Usuario usuario = usuariosRepository.findByEmail(email)
                 .orElseThrow(() -> new RecursoNaoEncontradoException("usuario não encontrado"));
 
-        Livro livro = livrosRepository.findById(emprestimoRequest.getId_livro())
+        Livro livro = livrosRepository.findById(emprestimoRequest.id_livro())
                 .orElseThrow(() -> new RecursoNaoEncontradoException("livro não encontrado"));
 
         if (livro.isEmprestado())
@@ -73,7 +73,7 @@ public class EmprestimosService {
         Usuario usuario = usuariosRepository.findByEmail(email)
                 .orElseThrow(() -> new RecursoNaoEncontradoException("usuario não encontrado"));
 
-        Livro livro = livrosRepository.findById(emprestimoRequest.getId_livro())
+        Livro livro = livrosRepository.findById(emprestimoRequest.id_livro())
                 .orElseThrow(() -> new RecursoNaoEncontradoException("livro não encontrado"));
 
         Emprestimo emprestimo = emprestimosRepository

@@ -218,7 +218,7 @@ public class EmprestimosControllerTest {
                         .with(user(NOME_USUARIO))
                         .content("""
                                         {
-                                            "id": %d
+                                            "id_livro": %d
                                         }
                                         """.formatted(ID_LIVRO))
                         .contentType(MediaType.APPLICATION_JSON)
@@ -236,7 +236,7 @@ public class EmprestimosControllerTest {
                                 .with(user(NOME_USUARIO))
                                 .content("""
                                         {
-                                            "id": %d
+                                            "id_livro": %d
                                         }
                                         """.formatted(ID_LIVRO))
                                 .contentType(MediaType.APPLICATION_JSON)
@@ -254,7 +254,7 @@ public class EmprestimosControllerTest {
                                 .with(user(NOME_USUARIO))
                                 .content("""
                                         {
-                                            "id": %d
+                                            "id_livro": %d
                                         }
                                         """.formatted(ID_LIVRO))
                                 .contentType(MediaType.APPLICATION_JSON)
