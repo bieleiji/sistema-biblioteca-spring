@@ -22,6 +22,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -29,6 +30,7 @@ import java.util.List;
 import java.util.Objects;
 
 import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -171,6 +173,18 @@ public class EmprestimosControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
         ).andExpect(status().isConflict());
     }
+
+    @Test
+    public void emprestarLivroTestParametroInvalido() throws Exception {
+        mockMvc.perform(
+                        post("/emprestimos/emprestar")
+                                .with(user(NOME_USUARIO))
+                                .content("{}")
+                                .contentType(MediaType.APPLICATION_JSON)
+                )
+                .andExpect(status().isBadRequest());
+    }
+
 
     @Test
     public void emprestarLivroSucesso() throws Exception {
