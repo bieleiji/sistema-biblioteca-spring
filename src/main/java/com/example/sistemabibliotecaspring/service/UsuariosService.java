@@ -50,12 +50,12 @@ public class UsuariosService {
             throw new RecursoEmConflitoException("email já está sendo utilizado");
         else usuario.setEmail(salvarUsuarioRequest.getEmail());
 
-        // if(authentication != null) {
-        //     if (authentication.getAuthorities().toString().contains("ROLE_ADMIN") ||
-        //            !salvarUsuarioRequest.getRole().equals(Role.ADMIN))
+        if(authentication != null) {
+            if (authentication.getAuthorities().toString().contains("ROLE_ADMIN") ||
+                   !salvarUsuarioRequest.getRole().equals(Role.ADMIN))
                 usuario.setRole(salvarUsuarioRequest.getRole());
-        //     else throw new RecursoNaoAutorizadoException("Apenas ADMINs podem definir outros ADMINs");
-        // }
+            else throw new RecursoNaoAutorizadoException("Apenas ADMINs podem definir outros ADMINs");
+        }
 
         return ResponseEntity.status(HttpStatus.CREATED).body(new UsuarioResponse(usuariosRepository.save(usuario)));
     }
