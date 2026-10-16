@@ -35,8 +35,9 @@ public class UsuariosController {
     }
 
     @GetMapping("/listar")
-    public Page<UsuarioResponse> listarUsuarios(@RequestParam(defaultValue = "0") int page,
-                                        @RequestParam(defaultValue = "10") int size){
+    public Page<UsuarioResponse> listarUsuarios(
+        @RequestParam(name = "page", defaultValue = "0") int page,
+        @RequestParam(name = "size", defaultValue = "10") int size){
         return usuariosService.listarUsuarios(page, size);
     }
 

@@ -1,15 +1,16 @@
 package com.example.sistemabibliotecaspring.controller;
 
-import com.example.sistemabibliotecaspring.configuration.JwtAuthenticatorFilter;
-import com.example.sistemabibliotecaspring.dto.emprestimoDTO.request.EmprestimoRequest;
-import com.example.sistemabibliotecaspring.dto.emprestimoDTO.response.EmprestimoResponse;
-import com.example.sistemabibliotecaspring.exception.RecursoEmConflitoException;
-import com.example.sistemabibliotecaspring.exception.RecursoNaoEncontradoException;
-import com.example.sistemabibliotecaspring.model.Emprestimo;
-import com.example.sistemabibliotecaspring.model.Livro;
-import com.example.sistemabibliotecaspring.model.Usuario;
-import com.example.sistemabibliotecaspring.repository.EmprestimosRepository;
-import com.example.sistemabibliotecaspring.service.EmprestimosService;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.*;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
+
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
@@ -22,21 +23,17 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.web.bind.MethodArgumentNotValidException;
 
-import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-
-import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import com.example.sistemabibliotecaspring.configuration.JwtAuthenticatorFilter;
+import com.example.sistemabibliotecaspring.dto.emprestimoDTO.request.EmprestimoRequest;
+import com.example.sistemabibliotecaspring.dto.emprestimoDTO.response.EmprestimoResponse;
+import com.example.sistemabibliotecaspring.exception.RecursoEmConflitoException;
+import com.example.sistemabibliotecaspring.exception.RecursoNaoEncontradoException;
+import com.example.sistemabibliotecaspring.model.Emprestimo;
+import com.example.sistemabibliotecaspring.model.Livro;
+import com.example.sistemabibliotecaspring.model.Usuario;
+import com.example.sistemabibliotecaspring.repository.EmprestimosRepository;
+import com.example.sistemabibliotecaspring.service.EmprestimosService;
 
 @WebMvcTest(EmprestimosController.class)
 @AutoConfigureMockMvc(addFilters = false)
@@ -75,7 +72,7 @@ public class EmprestimosControllerTest {
                 get("/emprestimos")
                         .param("page", "0")
                         .param("size", "10")
-                        .with(user("Gabriel"))
+                        .with(user(EMAIL))
                         .contentType(MediaType.APPLICATION_JSON)
         )
                 .andExpect(status().isNotFound());
@@ -102,7 +99,7 @@ public class EmprestimosControllerTest {
                                 .param("page", Integer.toString(page))
                                 .param("size", Integer.toString(size))
                                 .param("devolvido", Boolean.toString(DEVOLVIDO))
-                                .with(user("Gabriel"))
+                                .with(user(EMAIL))
                                 .contentType(MediaType.APPLICATION_JSON)
                 )
                 .andExpect(status().isOk())

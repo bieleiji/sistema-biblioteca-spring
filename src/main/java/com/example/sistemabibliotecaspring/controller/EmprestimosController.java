@@ -18,9 +18,9 @@ public class EmprestimosController {
 
     @GetMapping
     public Page<EmprestimoResponse> mostrarEmprestimosUsuario(
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size,
-            @RequestParam(required = false) Boolean devolvido,
+            @RequestParam(name = "page", defaultValue = "0") int page,
+            @RequestParam(name = "size", defaultValue = "10") int size,
+            @RequestParam(name = "devolvido", required = false) Boolean devolvido,
             Authentication authentication) {
         return emprestimosService.mostrarEmprestimosUsuario(authentication, page, size, devolvido);
     }

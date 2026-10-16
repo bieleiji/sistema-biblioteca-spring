@@ -10,7 +10,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
-
 @RestController
 @RequestMapping("/livros")
 public class LivrosController {
@@ -22,37 +21,37 @@ public class LivrosController {
 
     @GetMapping
     public Page<LivroResponse> getLivros(
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size,
-            @RequestParam(required = false) String titulo,
-            @RequestParam(required = false) Boolean ehEmprestado) {
+            @RequestParam(name = "page", defaultValue = "0") int page,
+            @RequestParam(name = "size", defaultValue = "10") int size,
+            @RequestParam(name = "titulo", required = false) String titulo,
+            @RequestParam(name = "ehEmprestado", required = false) Boolean ehEmprestado) {
         return livrosService.getLivros(page, size, titulo, ehEmprestado);
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<LivroResponse> getLivro(@PathVariable long id) {
+    public ResponseEntity<LivroResponse> getLivro(@PathVariable(name = "id") long id) {
         return livrosService.getLivro(id);
     }
 
     @PostMapping
     public ResponseEntity<Livro> salvarLivro(
             Authentication authentication,
-            @Valid @RequestBody LivroRequest livroRequest){
+            @Valid @RequestBody LivroRequest livroRequest) {
         return livrosService.salvarLivro(livroRequest, authentication);
     }
 
     @PatchMapping("/{id}")
     public ResponseEntity<Livro> atualizarLivro(
             Authentication authentication,
-            @PathVariable long id,
-            @Valid @RequestBody LivroRequest livroRequest){
+            @PathVariable(name = "id") long id,
+            @Valid @RequestBody LivroRequest livroRequest) {
         return livrosService.atualizarLivro(id, livroRequest, authentication);
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<String> deletarLivro(
             Authentication authentication,
-            @PathVariable long id){
+            @PathVariable(name = "id") long id) {
         return livrosService.deletarLivro(id, authentication);
     }
 }

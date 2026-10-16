@@ -19,7 +19,7 @@ import java.io.IOException;
 public class JwtAuthenticatorFilter extends OncePerRequestFilter {
     private final TokenService tokenService;
     private final UsuarioDetailsService usuarioDetailsService;
-
+    
     public JwtAuthenticatorFilter(TokenService tokenService, UsuarioDetailsService usuarioDetailsService) {
         this.tokenService = tokenService;
         this.usuarioDetailsService = usuarioDetailsService;
