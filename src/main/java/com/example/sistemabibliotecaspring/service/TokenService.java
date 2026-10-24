@@ -1,20 +1,26 @@
 package com.example.sistemabibliotecaspring.service;
 
-import com.example.sistemabibliotecaspring.model.Usuario;
-import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.security.Keys;
+import java.nio.charset.StandardCharsets;
+import java.util.Date;
+
+import javax.crypto.SecretKey;
+
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
-import javax.crypto.SecretKey;
-import java.nio.charset.StandardCharsets;
-import java.util.Date;
+import com.example.sistemabibliotecaspring.exception.RecursoNaoAutenticadoException;
+import com.example.sistemabibliotecaspring.model.Usuario;
+
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.ExpiredJwtException;
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.security.Keys;
+import io.jsonwebtoken.security.SignatureException;
 
 
 @Component
 public class TokenService {
-    private final SecretKey secretKey;
+    protected final SecretKey secretKey;
 
     public TokenService(@Value("${jwt.secret-code}") String secret) {
         secretKey = Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
@@ -31,11 +37,17 @@ public class TokenService {
     }
 
     public Claims obterClaims(String token) {
+        try {
         return Jwts.parser()
                 .verifyWith(secretKey)
                 .build()
                 .parseSignedClaims(token)
                 .getPayload();
+        } catch (SignatureException e) {
+            throw new RecursoNaoAutenticadoException("Token inválido", e);
+        } catch (ExpiredJwtException e) {
+            throw new RecursoNaoAutenticadoException("Token expirado", e);
+        }
     }
 
     public String extrairSubject(String token) {

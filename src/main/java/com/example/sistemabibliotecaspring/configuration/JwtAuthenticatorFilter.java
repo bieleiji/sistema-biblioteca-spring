@@ -1,11 +1,7 @@
 package com.example.sistemabibliotecaspring.configuration;
 
-import com.example.sistemabibliotecaspring.exception.RecursoNaoAutenticadoException;
-import com.example.sistemabibliotecaspring.service.TokenService;
-import jakarta.servlet.FilterChain;
-import jakarta.servlet.ServletException;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
+import java.io.IOException;
+
 import org.jspecify.annotations.NonNull;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -13,7 +9,13 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
-import java.io.IOException;
+import com.example.sistemabibliotecaspring.exception.RecursoNaoAutenticadoException;
+import com.example.sistemabibliotecaspring.service.TokenService;
+
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 
 @Component
 public class JwtAuthenticatorFilter extends OncePerRequestFilter {
@@ -36,9 +38,7 @@ public class JwtAuthenticatorFilter extends OncePerRequestFilter {
 
         token = token.replace("Bearer ", "");
 
-        if (tokenService.isTokenExpirado(token)) {
-            throw new RecursoNaoAutenticadoException("token invalido");
-        } else {
+        try {
             String email = tokenService.extrairSubject(token);
             UserDetails userDetails = usuarioDetailsService.loadUserByUsername(email);
 
@@ -46,6 +46,10 @@ public class JwtAuthenticatorFilter extends OncePerRequestFilter {
                     new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
 
             SecurityContextHolder.getContext().setAuthentication(usernamePasswordAuthenticationToken);
+        } catch (RecursoNaoAutenticadoException e) {
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            response.getWriter().write(e.getMessage());
+            return;
         }
 
         filterChain.doFilter(request,response);
