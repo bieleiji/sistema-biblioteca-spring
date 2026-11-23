@@ -4,7 +4,9 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 import java.util.Date;
+import java.util.Optional;
 
+import com.example.sistemabibliotecaspring.exception.RecursoNaoEncontradoException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,7 +31,7 @@ public class SegurancaJwtIT {
 
     @Autowired
     MockMvc mockMvc;
-    
+
     @Autowired
     private UsuariosRepository usuariosRepository;
 
@@ -42,17 +44,32 @@ public class SegurancaJwtIT {
 
     @Value ("${jwt.secret-code}") String secret;
 
+    private void adicionarUsuarioTeste(Role role) {
+        usuariosRepository.save(
+                new Usuario(
+                        "Usuario Teste",
+                        "email@example.com",
+                        passwordEncoder.encode("senha"),
+                        role
+                )
+        );
+    }
+
     @BeforeEach
     void setUp() {
         usuariosRepository.deleteAll();
 
-        usuariosRepository.save(
-            new Usuario("Usuario Teste", "email@example.com", "senha", Role.USUARIO)
-        );
+        adicionarUsuarioTeste(Role.USUARIO);
+    }
+
+    private String getTokenUsuarioTeste(TokenService tokenService) {
+        Optional<Usuario> usuario = usuariosRepository.findByEmail("email@example.com");
+        if(usuario.isPresent()) return tokenService.gerarToken(usuario.get());
+        else throw new RecursoNaoEncontradoException("Usuário não encontrado");
     }
 
     @Test
-    public void semTokenDeveRetornar401() throws Exception {
+    void semTokenDeveRetornar401() throws Exception {
         mockMvc.perform(get("/livros"))
                 .andExpect(status().isUnauthorized());
     }
@@ -60,10 +77,10 @@ public class SegurancaJwtIT {
     // resolver problema de teste não passando, depois de resolver problema em JwtAuthenticatorFilter
     
     @Test
-    public void assinaturaInvalidaDeveRetornar401() throws Exception {
-        TokenService tokenService = new TokenService("chave-secreta-inválida-com-mais-32-chars");
+    void assinaturaInvalidaDeveRetornar401() throws Exception {
+        TokenService tokenServiceChaveInvalida = new TokenService("chave-secreta-inválida-com-mais-32-chars");
         
-        String tokenInvalido = tokenService.gerarToken(usuariosRepository.findByEmail("email@example.com").get());
+        String tokenInvalido = getTokenUsuarioTeste(tokenServiceChaveInvalida);
         
         mockMvc.perform(get("/livros")
                 .header("Authorization", "Bearer " + tokenInvalido))
@@ -71,8 +88,8 @@ public class SegurancaJwtIT {
     }
 
     @Test
-    public void tokenExpiradoDeveRetornar401() throws Exception {
-        TokenService tokenService = new TokenService(secret) {
+    void tokenExpiradoDeveRetornar401() throws Exception {
+        TokenService tokenServiceTokenExpirado = new TokenService(secret) {
             @Override
             public String gerarToken(Usuario usuario) {
                 return Jwts.builder()
@@ -84,7 +101,7 @@ public class SegurancaJwtIT {
                         .compact();
             }
         };
-        String token = tokenService.gerarToken(usuariosRepository.findByEmail("email@example.com").get());
+        String token = getTokenUsuarioTeste(tokenServiceTokenExpirado);
 
         mockMvc.perform(get("/livros")
                 .header("Authorization", "Bearer " + token))
@@ -92,9 +109,38 @@ public class SegurancaJwtIT {
     }
 
     @Test
-    public void tokenValidoDeveRetornar200() throws Exception {
+    void tokenValidoUsuarioExcluido401() throws Exception {
+        String tokenUsuarioExcluido = getTokenUsuarioTeste(tokenService);
+        usuariosRepository.deleteAll();
+
         mockMvc.perform(get("/livros")
-    .header("Authorization", "Bearer " + tokenService.gerarToken(usuariosRepository.findByEmail("email@example.com").get())))
+                .header("Authorization", "Bearer " + tokenUsuarioExcluido))
+                .andExpect(status().isUnauthorized());
+
+        adicionarUsuarioTeste(Role.USUARIO);
+    }
+
+    @Test
+    void usuarioNaoAutorizadoDeveRetornar403() throws Exception {
+        mockMvc.perform(get("/usuarios/listar")
+                .header("Authorization", "Bearer " + getTokenUsuarioTeste(tokenService)))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void usuarioAdminAutorizadoDeveRetornar200() throws Exception {
+        usuariosRepository.deleteAll();
+        adicionarUsuarioTeste(Role.ADMIN);
+
+        mockMvc.perform(get("/usuarios/listar")
+                        .header("Authorization", "Bearer " + getTokenUsuarioTeste(tokenService)))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    void tokenValidoDeveRetornar200() throws Exception {
+        mockMvc.perform(get("/livros")
+    .header("Authorization", "Bearer " + getTokenUsuarioTeste(tokenService)))
     .andExpect(status().isOk());
     }
 }
